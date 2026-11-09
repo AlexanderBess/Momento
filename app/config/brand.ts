@@ -1,8 +1,8 @@
 /**
  * Brand and company data.
  *
- * The name MOMENTO is a working title: change `name` here and it updates
- * the logo, page titles, meta tags and footer.
+ * MOMENTO is the final brand name. It is still defined only here: `name`
+ * drives the logo, page titles, meta tags and footer.
  *
  * Contact, social and legal fields stay `null` / empty until real data exists.
  * Empty fields are simply not rendered — never put placeholder numbers here.

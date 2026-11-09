@@ -25,7 +25,7 @@ const icons: Record<BenefitIcon, Component> = {
         >
           <div class="flex items-center justify-between">
             <component :is="icons[benefit.icon]" class="size-7 text-accent" :stroke-width="1.25" aria-hidden="true" />
-            <span class="font-display text-xl text-muted-soft" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
+            <span class="font-display text-xl text-muted" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
           </div>
           <h3 class="text-lg font-semibold">{{ benefit.title }}</h3>
           <p class="text-[0.9375rem] leading-relaxed text-muted">{{ benefit.text }}</p>

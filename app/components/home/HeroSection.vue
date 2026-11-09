@@ -22,22 +22,27 @@ const detailImage: ImageAsset = { src: null, alt: 'Деталь празднич
     <div
       class="container-page relative grid items-center gap-10 pt-8 pb-16 md:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] md:gap-12 md:pt-12 md:pb-20 lg:min-h-[calc(100svh-var(--header-height))] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16 lg:py-16"
     >
-      <!-- Copy -->
-      <div class="flex flex-col items-start gap-6 motion-safe:animate-hero-enter md:gap-7">
-        <p class="eyebrow flex items-center gap-3">
+      <!--
+        Copy. The h1 is the LCP element on mobile, so it only rises (transform) and is never
+        transparent — an opacity fade would delay LCP. Supporting lines fade in with a short stagger.
+      -->
+      <div class="flex flex-col items-start gap-6 md:gap-7">
+        <p class="eyebrow flex items-center gap-3 motion-safe:animate-hero-enter">
           <span class="h-px w-8 bg-accent" aria-hidden="true" />
           Фото · Эмоции · Праздник
         </p>
 
-        <h1 id="hero-title" class="font-display text-display">
+        <h1 id="hero-title" class="font-display text-display motion-safe:animate-hero-rise">
           Сохраняем <em class="font-display text-accent italic">главное</em>
         </h1>
 
-        <p class="max-w-[30rem] text-lead text-muted">
+        <p class="max-w-[30rem] text-lead text-muted motion-safe:animate-hero-enter motion-safe:[animation-delay:80ms]">
           Фотосъёмка, фотозоны, фотобудки и фотокниги для ваших особенных событий
         </p>
 
-        <div class="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row md:flex-col lg:flex-row">
+        <div
+          class="mt-2 flex w-full flex-col gap-3 motion-safe:animate-hero-enter motion-safe:[animation-delay:160ms] sm:w-auto sm:flex-row md:flex-col lg:flex-row"
+        >
           <BaseButton to="/#services" size="lg" block class="sm:w-auto md:w-full lg:w-auto">
             Выбрать услуги
             <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>

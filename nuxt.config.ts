@@ -43,7 +43,8 @@ export default defineNuxtConfig({
         provider: 'google',
         weights: [500, 600],
         styles: ['normal', 'italic'],
-        preload: { weights: [500], styles: ['normal'], subsets: ['cyrillic'] },
+        // Both faces of the hero heading («Сохраняем» upright + «главное» italic) — it is the LCP element.
+        preload: { weights: [500], styles: ['normal', 'italic'], subsets: ['cyrillic'] },
       },
     ],
   },

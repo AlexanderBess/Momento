@@ -14,6 +14,16 @@
   }
 }
 
+/* Transform-only entrance for LCP text: never transparent, so it does not delay LCP. */
+@keyframes hero-rise {
+  from {
+    transform: translateY(12px);
+  }
+  to {
+    transform: none;
+  }
+}
+
 /* Slow drift of the soft accent glow (AI section, hero). Transform only — no blur filters. */
 @keyframes glow-drift {
   from {
