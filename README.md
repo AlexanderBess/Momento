@@ -46,6 +46,8 @@ docs/IMAGES.md    структура изображений и список тр
 - **Название бренда, контакты, соцсети, реквизиты** — `app/config/brand.ts`. Пустые (`null`) поля не выводятся.
 - **Меню и футер** — `app/config/navigation.ts`.
 - **Услуги** — `app/config/services.ts`.
+- **Страница AI-фотобудки** — контент, FAQ, характеристики, hotspot-точки: `app/config/booth.ts`. Данные комплектации (`boothKit`) пусты, пока не подтверждены.
+- **Ссылки на заявку** — только через `buildOrderLink()` из `app/config/order.ts` (`/order?service=booth&event=corporate`); будущая форма читает их через `parseOrderQuery()`.
 - **Цвета, шрифты, радиусы, motion** — `app/assets/css/tokens.css`. Каждая переменная из `@theme`
   доступна как CSS-переменная и как Tailwind-утилита (`bg-surface`, `text-muted`, `rounded-card`, `ease-enter`).
 

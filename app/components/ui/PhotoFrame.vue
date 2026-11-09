@@ -22,8 +22,10 @@ const props = withDefaults(
     /** Gentle zoom when the parent `group` is hovered (desktop pointers only). */
     zoomOnHover?: boolean
     rounded?: boolean
+    /** Placeholder palette: 'dark' for frames on dark sections. Real photos are unaffected. */
+    tone?: 'light' | 'dark'
   }>(),
-  { ratio: undefined, sizes: '100vw', priority: false, zoomOnHover: false, rounded: true },
+  { ratio: undefined, sizes: '100vw', priority: false, zoomOnHover: false, rounded: true, tone: 'light' },
 )
 
 const isFill = computed(() => props.ratio === 'fill')
@@ -34,8 +36,8 @@ const aspectRatio = computed(() =>
 
 <template>
   <div
-    class="relative overflow-hidden bg-surface-muted"
-    :class="[rounded && 'rounded-card', isFill && 'size-full']"
+    class="relative overflow-hidden"
+    :class="[tone === 'dark' ? 'bg-[#3a3241]' : 'bg-surface-muted', rounded && 'rounded-card', isFill && 'size-full']"
     :style="{ aspectRatio }"
   >
     <NuxtImg
@@ -59,15 +61,23 @@ const aspectRatio = computed(() =>
       v-else
       role="img"
       :aria-label="`Демонстрационный плейсхолдер: ${image.alt}`"
-      class="@container absolute inset-0 flex flex-col items-center justify-center gap-3 bg-linear-to-br from-surface-muted via-bg to-accent-soft/60 p-6 text-center"
-      :class="
-        zoomOnHover && 'transition-transform duration-(--motion-slow) ease-standard group-hover:scale-[1.03]'
-      "
+      class="@container absolute inset-0 flex flex-col items-center justify-center gap-3 bg-linear-to-br p-6 text-center"
+      :class="[
+        tone === 'dark' ? 'from-[#3d3445] via-[#2f2936] to-accent/45' : 'from-surface-muted via-bg to-accent-soft/60',
+        zoomOnHover && 'transition-transform duration-(--motion-slow) ease-standard group-hover:scale-[1.03]',
+      ]"
     >
-      <ImageIcon class="size-7 text-muted-soft" :stroke-width="1.25" aria-hidden="true" />
+      <ImageIcon
+        class="size-7"
+        :class="tone === 'dark' ? 'text-bg/45' : 'text-muted-soft'"
+        :stroke-width="1.25"
+        aria-hidden="true"
+      />
       <!-- Full label in roomy frames, short one in small frames (container query). -->
-      <span class="eyebrow hidden tracking-[0.14em] @[15rem]:inline">Демо · фото будет добавлено</span>
-      <span class="eyebrow tracking-[0.14em] @[15rem]:hidden">Демо</span>
+      <span class="eyebrow hidden tracking-[0.14em] @[15rem]:inline" :class="tone === 'dark' && 'text-bg/65!'">
+        Демо · фото будет добавлено
+      </span>
+      <span class="eyebrow tracking-[0.14em] @[15rem]:hidden" :class="tone === 'dark' && 'text-bg/65!'">Демо</span>
     </div>
   </div>
 </template>
