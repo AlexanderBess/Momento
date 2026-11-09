@@ -10,7 +10,10 @@ import type { ImageAsset } from '~/types/service'
 const props = withDefaults(
   defineProps<{
     image: ImageAsset
-    /** CSS aspect-ratio, e.g. "4 / 5". Defaults to the image's intrinsic ratio. */
+    /**
+     * CSS aspect-ratio, e.g. "4 / 5". Defaults to the image's intrinsic ratio.
+     * "fill" — no own ratio, stretches to the parent's height (the parent reserves the space).
+     */
     ratio?: string
     /** `sizes` attribute for responsive srcset, e.g. "(min-width: 1024px) 50vw, 100vw". */
     sizes?: string
@@ -23,11 +26,18 @@ const props = withDefaults(
   { ratio: undefined, sizes: '100vw', priority: false, zoomOnHover: false, rounded: true },
 )
 
-const aspectRatio = computed(() => props.ratio ?? `${props.image.width} / ${props.image.height}`)
+const isFill = computed(() => props.ratio === 'fill')
+const aspectRatio = computed(() =>
+  isFill.value ? undefined : (props.ratio ?? `${props.image.width} / ${props.image.height}`),
+)
 </script>
 
 <template>
-  <div class="relative overflow-hidden bg-surface-muted" :class="rounded && 'rounded-card'" :style="{ aspectRatio }">
+  <div
+    class="relative overflow-hidden bg-surface-muted"
+    :class="[rounded && 'rounded-card', isFill && 'size-full']"
+    :style="{ aspectRatio }"
+  >
     <NuxtImg
       v-if="image.src"
       :src="image.src"
@@ -49,13 +59,15 @@ const aspectRatio = computed(() => props.ratio ?? `${props.image.width} / ${prop
       v-else
       role="img"
       :aria-label="`Демонстрационный плейсхолдер: ${image.alt}`"
-      class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-linear-to-br from-surface-muted via-bg to-accent-soft/60 p-6 text-center"
+      class="@container absolute inset-0 flex flex-col items-center justify-center gap-3 bg-linear-to-br from-surface-muted via-bg to-accent-soft/60 p-6 text-center"
       :class="
         zoomOnHover && 'transition-transform duration-(--motion-slow) ease-standard group-hover:scale-[1.03]'
       "
     >
       <ImageIcon class="size-7 text-muted-soft" :stroke-width="1.25" aria-hidden="true" />
-      <span class="eyebrow tracking-[0.14em]">Демо · фото будет добавлено</span>
+      <!-- Full label in roomy frames, short one in small frames (container query). -->
+      <span class="eyebrow hidden tracking-[0.14em] @[15rem]:inline">Демо · фото будет добавлено</span>
+      <span class="eyebrow tracking-[0.14em] @[15rem]:hidden">Демо</span>
     </div>
   </div>
 </template>

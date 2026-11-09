@@ -87,6 +87,15 @@
   color: var(--color-muted);
 }
 
+/* Horizontal carousels: scrollable by touch / trackpad / keyboard, no visible scrollbar. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* Decorative elements may bleed out of a section without causing horizontal scroll. */
 @utility clip-x {
   overflow-x: clip;
