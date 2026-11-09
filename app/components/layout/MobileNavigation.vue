@@ -31,7 +31,20 @@ function onClose() {
   if (props.open) emit('close')
 }
 
+// The dialog is hidden from lg up (CSS). If the viewport crosses that breakpoint while the
+// menu is open (tablet rotation, window resize), close it — otherwise the page would stay inert.
+let desktopQuery: MediaQueryList | null = null
+const onBreakpoint = (event: MediaQueryListEvent) => {
+  if (event.matches && props.open) emit('close')
+}
+
+onMounted(() => {
+  desktopQuery = window.matchMedia('(min-width: 1024px)')
+  desktopQuery.addEventListener('change', onBreakpoint)
+})
+
 onBeforeUnmount(() => {
+  desktopQuery?.removeEventListener('change', onBreakpoint)
   document.documentElement.style.overflow = ''
 })
 </script>

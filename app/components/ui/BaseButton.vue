@@ -31,8 +31,9 @@ const sizeClass: Record<Size, string> = {
 
 const classes = computed(() => [
   'group/button inline-flex shrink-0 select-none items-center justify-center gap-2 rounded-button font-semibold tracking-[0.01em]',
-  'transition-[background-color,color,box-shadow,transform] duration-(--motion-normal) ease-standard',
-  'active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
+  'transition-[background-color,color,box-shadow,translate,scale] duration-(--motion-normal) ease-standard',
+  // Microinteraction: 1px lift on hover (pointer devices only), gentle press on tap/click.
+  'hover:-translate-y-px active:translate-y-0 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
   variantClass[props.variant],
   sizeClass[props.size],
   props.block && 'w-full',
