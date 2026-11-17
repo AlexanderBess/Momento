@@ -38,7 +38,9 @@ watch(
       <nav aria-label="Основная навигация" class="ml-auto hidden lg:block">
         <ul class="flex items-center gap-1">
           <li v-for="item in mainNavigation" :key="item.to">
+            <NavDropdown v-if="item.children?.length" :item="item" />
             <NuxtLink
+              v-else
               :to="item.to"
               class="relative rounded-button px-3.5 py-2 text-sm font-medium text-text/80 transition-colors duration-(--motion-fast) hover:text-text aria-[current=page]:text-text"
             >
