@@ -20,7 +20,7 @@ useParallax(media, 16)
           <EquipmentHotspots
             :image="boothEquipment.image"
             :hotspots="boothHotspots"
-            sizes="(min-width: 1024px) 460px, (min-width: 768px) 40vw, 384px"
+            sizes="384px md:410px lg:460px"
           />
         </div>
       </div>

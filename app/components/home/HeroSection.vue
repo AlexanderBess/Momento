@@ -63,7 +63,7 @@ const detailImage: ImageAsset = { src: null, alt: 'Деталь празднич
           :image="heroImage"
           ratio="4 / 5"
           priority
-          sizes="(min-width: 1024px) 560px, (min-width: 768px) 45vw, (min-width: 640px) 544px, 100vw"
+          sizes="640px sm:544px md:460px lg:560px"
           :rounded="false"
           class="rounded-modal"
         />

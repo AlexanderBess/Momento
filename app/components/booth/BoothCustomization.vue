@@ -97,7 +97,7 @@ function onKeydown(event: KeyboardEvent) {
                   ratio="4 / 3"
                   zoom-on-hover
                   class="group [grid-area:1/1]"
-                  sizes="(min-width: 1024px) 620px, 100vw"
+                  sizes="640px lg:620px"
                 />
               </Transition>
             </div>

@@ -81,7 +81,7 @@ const { isInView } = useInView(section, { rootMargin: '120px 0px' })
               class="absolute rounded-card bg-surface p-2 pb-8 shadow-(--shadow-raised) transition-transform duration-(--motion-slow) ease-enter sm:p-2.5 sm:pb-10"
               :class="card.class"
             >
-              <PhotoFrame :image="card.image" ratio="3 / 4" sizes="(min-width: 1024px) 260px, 50vw" :rounded="false" class="rounded-[0.5rem]" />
+              <PhotoFrame :image="card.image" ratio="3 / 4" sizes="320px lg:260px" :rounded="false" class="rounded-[0.5rem]" />
             </div>
 
             <Sparkles
