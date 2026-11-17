@@ -9,7 +9,7 @@ withDefaults(
     headingLevel?: 'h2' | 'h3'
     sizes?: string
   }>(),
-  { headingLevel: 'h3', sizes: '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 80vw' },
+  { headingLevel: 'h3', sizes: '512px lg:360px' },
 )
 </script>
 

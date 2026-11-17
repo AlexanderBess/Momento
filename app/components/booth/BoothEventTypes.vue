@@ -60,7 +60,7 @@ const ratios = [
                   ratio="fill"
                   zoom-on-hover
                   :rounded="false"
-                  :sizes="index < 2 ? '(min-width: 1024px) 600px, 100vw' : '(min-width: 1024px) 400px, 50vw'"
+                  :sizes="index < 2 ? '640px lg:600px' : '320px lg:400px'"
                 />
               </div>
               <span

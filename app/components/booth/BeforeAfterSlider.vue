@@ -21,7 +21,7 @@ const props = withDefaults(
     /** Play a one-off hint animation when this becomes true. */
     demo?: boolean
   }>(),
-  { beforeLabel: 'Оригинал', afterLabel: 'AI-образ', sizes: '(min-width: 1024px) 560px, 100vw', demo: false },
+  { beforeLabel: 'Оригинал', afterLabel: 'AI-образ', sizes: '640px lg:560px', demo: false },
 )
 
 const position = ref(50)

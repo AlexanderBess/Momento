@@ -17,7 +17,7 @@ useParallax(media, 28)
         <div class="relative h-72 overflow-hidden sm:h-96 lg:h-full lg:min-h-[36rem]">
           <ClipReveal class="absolute inset-0">
             <div ref="media" class="parallax-media absolute inset-x-0 -inset-y-8">
-              <PhotoFrame :image="boothBusinessImage" ratio="fill" :rounded="false" sizes="(min-width: 1024px) 640px, 100vw" />
+              <PhotoFrame :image="boothBusinessImage" ratio="fill" :rounded="false" sizes="640px" />
             </div>
           </ClipReveal>
         </div>

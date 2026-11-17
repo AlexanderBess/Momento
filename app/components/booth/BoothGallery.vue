@@ -69,7 +69,7 @@ function select(next: Filter) {
               <PhotoFrame
                 :image="item.image"
                 zoom-on-hover
-                sizes="(min-width: 1024px) 380px, 50vw"
+                sizes="320px lg:380px"
               />
               <figcaption
                 class="absolute bottom-3 left-3 rounded-full bg-surface/95 px-3 py-1.5 text-xs font-semibold text-text shadow-(--shadow-soft)"

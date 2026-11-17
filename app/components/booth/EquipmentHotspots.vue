@@ -55,7 +55,7 @@ const { isInView } = useInView(root, { once: true })
 
 <template>
   <div ref="root" class="relative" :class="isInView && 'hotspots-live'" @keydown="onKeydown">
-    <PhotoFrame :image="props.image" :sizes="sizes ?? '(min-width: 1024px) 480px, 100vw'" />
+    <PhotoFrame :image="props.image" :sizes="sizes ?? '640px lg:480px'" />
 
     <div
       v-for="(spot, index) in hotspots"

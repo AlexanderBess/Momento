@@ -56,7 +56,7 @@ const demo = computed(() => isInView.value && fullMotion.value)
                 :before="active.before"
                 :after="active.after"
                 :demo="demo"
-                sizes="(min-width: 1024px) 544px, 100vw"
+                sizes="640px lg:544px"
               />
             </Transition>
           </div>

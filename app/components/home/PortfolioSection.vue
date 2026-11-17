@@ -48,7 +48,7 @@ const layout = [
               :image="item.image"
               ratio="fill"
               zoom-on-hover
-              sizes="(min-width: 768px) 50vw, 100vw"
+              sizes="640px md:720px"
             />
             <figcaption
               class="absolute bottom-3 left-3 rounded-full bg-surface/95 px-3 py-1.5 text-xs font-semibold text-text shadow-(--shadow-soft)"

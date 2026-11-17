@@ -15,7 +15,7 @@ const props = withDefaults(
      * "fill" — no own ratio, stretches to the parent's height (the parent reserves the space).
      */
     ratio?: string
-    /** `sizes` attribute for responsive srcset, e.g. "(min-width: 1024px) 50vw, 100vw". */
+    /** `sizes` attribute for responsive srcset, @nuxt/image syntax, mobile-first px: "640px lg:480px" (a bare vw base breaks the srcset). */
     sizes?: string
     /** Above-the-fold image: eager loading + high fetch priority + preload. */
     priority?: boolean
@@ -25,7 +25,7 @@ const props = withDefaults(
     /** Placeholder palette: 'dark' for frames on dark sections. Real photos are unaffected. */
     tone?: 'light' | 'dark'
   }>(),
-  { ratio: undefined, sizes: '100vw', priority: false, zoomOnHover: false, rounded: true, tone: 'light' },
+  { ratio: undefined, sizes: '640px', priority: false, zoomOnHover: false, rounded: true, tone: 'light' },
 )
 
 const isFill = computed(() => props.ratio === 'fill')
