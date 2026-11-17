@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { eventTypeLabels, parseOrderQuery } from '~/config/order'
-import { findService } from '~/config/services'
+import { describeOrder, parseOrderQuery } from '~/config/order'
 
 // The order form is not built yet. The stub already reads the shared prefill contract
-// (/order?service=…&event=…, see config/order.ts) so links from service pages are not lost.
+// (/order?service=…&event=…&package=…, see config/order.ts) so links from service pages are not lost.
 const route = useRoute()
 const prefill = computed(() => parseOrderQuery(route.query))
 const summary = computed(() => {
-  const { service, event } = prefill.value
-  const parts = [service && findService(service)?.title, event && eventTypeLabels[event]].filter(Boolean)
+  const parts = describeOrder(prefill.value)
   return parts.length ? `Вы выбрали: ${parts.join(' · ')}.` : ''
 })
 </script>
