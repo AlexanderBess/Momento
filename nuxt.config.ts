@@ -10,6 +10,14 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  runtimeConfig: {
+    public: {
+      // Where order requests are POSTed (CRM webhook / form service). Empty → forms say that online
+      // sending is not connected yet instead of faking success. Set via NUXT_PUBLIC_LEADS_ENDPOINT.
+      leadsEndpoint: '',
+    },
+  },
+
   // Components are named by file name only (BaseButton, AppHeader),
   // folders are used purely for grouping.
   components: [{ path: '~/components', pathPrefix: false }],
