@@ -15,7 +15,7 @@ const service = computed(() => findService(String(route.params.slug))!)
 <template>
   <PageStub :title="service.title" :description="service.summary" eyebrow="Услуга · страница в разработке">
     <template #actions>
-      <BaseButton to="/services" variant="ghost">Все услуги</BaseButton>
+      <BaseButton to="/#services" variant="ghost">Все услуги</BaseButton>
     </template>
   </PageStub>
 </template>

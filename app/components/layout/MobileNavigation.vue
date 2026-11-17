@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowUpRight, X } from '@lucide/vue'
+import { ArrowUpRight, ChevronDown, X } from '@lucide/vue'
 import { brand } from '~/config/brand'
 import { mainNavigation, primaryCta } from '~/config/navigation'
 
@@ -11,6 +11,13 @@ const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
+
+// Which section (by its `to`) has its sub-list expanded; one at a time, reset on every close.
+const expanded = ref<string | null>(null)
+const toggle = (to: string) => {
+  expanded.value = expanded.value === to ? null : to
+}
+const sectionId = (to: string) => `mobile-nav${to.replace(/\W+/g, '-')}`
 
 watch(
   () => props.open,
@@ -28,6 +35,7 @@ watch(
 
 function onClose() {
   document.documentElement.style.overflow = ''
+  expanded.value = null
   if (props.open) emit('close')
 }
 
@@ -68,10 +76,50 @@ onBeforeUnmount(() => {
       </button>
     </div>
 
-    <nav aria-label="Основная навигация" class="container-page flex flex-1 flex-col pt-6 pb-8">
+    <nav aria-label="Основная навигация" class="container-page flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pt-6 pb-8">
       <ul class="flex flex-col">
         <li v-for="item in mainNavigation" :key="item.to" class="border-b border-border/70">
+          <template v-if="item.children?.length">
+            <button
+              type="button"
+              class="flex min-h-16 w-full items-center justify-between py-3 text-left font-display text-[2rem] leading-tight"
+              :aria-expanded="expanded === item.to"
+              :aria-controls="sectionId(item.to)"
+              @click="toggle(item.to)"
+            >
+              {{ item.label }}
+              <ChevronDown
+                class="size-5 text-muted-soft transition-transform duration-(--motion-normal) ease-standard"
+                :class="expanded === item.to && 'rotate-180'"
+                :stroke-width="1.5"
+                aria-hidden="true"
+              />
+            </button>
+
+            <!-- grid-rows 0fr → 1fr animates to the content's natural height. -->
+            <div
+              :id="sectionId(item.to)"
+              class="grid transition-[grid-template-rows,opacity] duration-(--motion-normal) ease-standard"
+              :class="expanded === item.to ? 'grid-rows-[1fr] opacity-100' : 'invisible grid-rows-[0fr] opacity-0'"
+            >
+              <ul class="min-h-0 overflow-hidden pb-3">
+                <li v-for="child in item.children" :key="child.to">
+                  <NuxtLink
+                    :to="child.to"
+                    class="-mx-3 block rounded-button px-3 py-2.5 transition-colors duration-(--motion-fast) hover:bg-text/5 aria-[current=page]:bg-text/5"
+                    @click="emit('close')"
+                  >
+                    <span class="block text-base font-medium">{{ child.label }}</span>
+                    <span v-if="child.description" class="block text-sm leading-snug text-muted">
+                      {{ child.description }}
+                    </span>
+                  </NuxtLink>
+                </li>
+              </ul>
+            </div>
+          </template>
           <NuxtLink
+            v-else
             :to="item.to"
             class="group flex min-h-16 items-center justify-between py-3 font-display text-[2rem] leading-tight"
             @click="emit('close')"
