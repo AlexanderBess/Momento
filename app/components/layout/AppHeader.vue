@@ -8,6 +8,10 @@ import { cartLink, mainNavigation, primaryCta } from '~/config/navigation'
  */
 defineProps<{ scrolled: boolean }>()
 
+// Number of positions in the shared request; 0 until the saved cart is loaded on the client.
+const { count: cartCount } = useCart()
+const cartLabel = computed(() => (cartCount.value ? `${cartLink.label}: позиций — ${cartCount.value}` : cartLink.label))
+
 const menuOpen = ref(false)
 const menuButton = useTemplateRef<HTMLButtonElement>('menuButton')
 
@@ -53,10 +57,20 @@ watch(
       <div class="ml-auto flex items-center gap-1 lg:ml-0 lg:gap-3">
         <NuxtLink
           :to="cartLink.to"
-          :aria-label="cartLink.label"
-          class="inline-flex size-11 items-center justify-center rounded-button text-text transition-colors duration-(--motion-fast) hover:bg-text/5"
+          :aria-label="cartLabel"
+          class="relative inline-flex size-11 items-center justify-center rounded-button text-text transition-colors duration-(--motion-fast) hover:bg-text/5"
         >
           <ShoppingBag class="size-5" :stroke-width="1.5" aria-hidden="true" />
+          <Transition name="cart-badge">
+            <span
+              v-if="cartCount"
+              :key="cartCount"
+              class="absolute top-1 right-0.5 inline-flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-text px-1 text-[0.6875rem] leading-none font-bold text-bg tabular-nums"
+              aria-hidden="true"
+            >
+              {{ cartCount }}
+            </span>
+          </Transition>
         </NuxtLink>
 
         <!-- Wrapper owns visibility: a display utility on BaseButton itself would compete with its inline-flex. -->
@@ -81,3 +95,17 @@ watch(
     <MobileNavigation id="mobile-navigation" :open="menuOpen" @close="closeMenu()" />
   </header>
 </template>
+
+<style scoped>
+/* The counter pops in when it appears or changes. */
+.cart-badge-enter-active {
+  transition:
+    transform var(--motion-slow) var(--ease-enter),
+    opacity var(--motion-normal) var(--ease-standard);
+}
+
+.cart-badge-enter-from {
+  opacity: 0;
+  transform: scale(0.4);
+}
+</style>

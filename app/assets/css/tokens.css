@@ -90,6 +90,26 @@
   --shadow-raised: 0 2px 4px rgb(41 39 36 / 0.05), 0 18px 40px -20px rgb(41 39 36 / 0.22);
 }
 
+/*
+ * Service themes — a page-level mood on top of the same design system.
+ * The wrapper of a service page re-points the accent tokens, so buttons, option cards, chips and
+ * focus rings take the service colour; header, footer and everything else stay as they are.
+ *
+ * Photo zones: muted sage / olive. The brief's accent #747B62 is 4.4:1 against white text and
+ * 3.6:1 on #E8E9DF — below AA for small text — so it stays a decorative tone (--pz-olive) and a
+ * darker shade of the same hue is used for buttons and text (#5B624B: 6.4:1 / 5.2:1).
+ */
+.theme-photozones {
+  --color-accent: #5b624b;
+  --color-accent-hover: #4b513d;
+  --color-accent-soft: #e8e9df;
+
+  --pz-mist: #e8e9df; /* primary tint: hero, final CTA */
+  --pz-sage: #d3d7c5; /* secondary tint: illustrations, quiet fills */
+  --pz-olive: #747b62; /* decorative accent: lines, icons, large numerals */
+  --pz-paper: #f7f6f1; /* light background sections */
+}
+
 @media (min-width: 768px) {
   :root {
     --gutter: 2.5rem; /* 40px */
