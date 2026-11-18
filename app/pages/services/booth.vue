@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { brand } from '~/config/brand'
 
+definePageMeta({ service: 'photobooth' })
+
 // Bespoke page for the booth service — takes precedence over services/[slug].vue.
 const title = 'Аренда AI-фотобудки на мероприятие'
 const description =

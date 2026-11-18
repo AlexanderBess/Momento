@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { brand } from '~/config/brand'
 
+definePageMeta({ service: 'photobooks' })
+
 // Bespoke page for the photobook service — takes precedence over services/[slug].vue.
 const title = 'Фотокниги — онлайн-конструктор'
 const description =

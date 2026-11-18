@@ -19,3 +19,18 @@ export interface Service {
   /** Priority business direction gets a highlighted treatment. */
   featured?: boolean
 }
+
+/**
+ * Visual theme of a page: picks the palette (tokens.css, [data-service]) and the page transition
+ * (transitions.css). Set per page with `definePageMeta({ service: '…' })`; pages without it are neutral.
+ */
+export type ServiceTheme = 'photozones' | 'photography' | 'photobooks' | 'photobooth'
+
+declare module '#app' {
+  interface PageMeta {
+    service?: ServiceTheme
+  }
+}
+
+/** Page transition preset: the destination page's theme, or `neutral` for every other page. */
+export type TransitionPreset = ServiceTheme | 'neutral'

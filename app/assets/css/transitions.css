@@ -1,0 +1,227 @@
+/*
+ * MOMENTO page transitions (View Transitions API).
+ *
+ * plugins/page-transitions.client.ts writes the destination page's preset to
+ * <html data-page-transition="photozones | photography | photobooks | photobooth | neutral">.
+ * The browser snapshots the old page, Nuxt renders the new one, and these rules animate the two
+ * snapshots. Only snapshots are animated (opacity, transform, clip-path) — no live DOM, no layout,
+ * no heavy images being re-decoded — so it stays smooth on weak phones.
+ *
+ * Layers, bottom to top:
+ *   ::view-transition              the veil — a soft fill in the destination page's colour;
+ *   ::view-transition-old(root)    the page we leave: always fades out quickly into the veil;
+ *   ::view-transition-new(root)    the page we open: each preset reveals it in its own way;
+ *   site-header, page-loader       shared chrome: stays in place and simply cross-fades.
+ *
+ * Reduced motion: Nuxt does not start a view transition at all (instant switch); the media query at
+ * the end is a second guard. Browsers without the API also switch instantly.
+ */
+
+.site-header {
+  view-transition-name: site-header;
+}
+
+:root {
+  --pt-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --pt-leave: 220ms; /* old page → veil */
+  --pt-enter: 520ms; /* main reveal of the new page */
+  --pt-overlap: 90ms; /* the reveal starts while the old page is still fading */
+  --pt-veil: var(--color-bg);
+}
+
+html[data-page-transition='photozones'] {
+  --pt-veil: #e8e9df;
+  --pt-enter: 560ms;
+}
+
+html[data-page-transition='photography'] {
+  --pt-veil: #f0e6e0;
+}
+
+html[data-page-transition='photobooks'] {
+  --pt-veil: #e8eef0;
+  --pt-enter: 540ms;
+}
+
+html[data-page-transition='photobooth'] {
+  --pt-veil: #f2ebdd;
+  --pt-enter: 440ms;
+}
+
+html[data-page-transition='neutral'] {
+  --pt-enter: 380ms;
+}
+
+/* ---------- Shared layers ---------- */
+
+::view-transition {
+  background-color: var(--pt-veil);
+}
+
+::view-transition-old(root) {
+  animation: pt-leave var(--pt-leave) var(--pt-ease) both;
+}
+
+::view-transition-new(root) {
+  animation: pt-rise var(--pt-enter) var(--pt-ease) var(--pt-overlap) both;
+}
+
+::view-transition-group(site-header),
+::view-transition-group(page-loader) {
+  animation-duration: var(--pt-leave);
+  animation-timing-function: var(--pt-ease);
+}
+
+::view-transition-old(site-header),
+::view-transition-new(site-header),
+::view-transition-old(page-loader),
+::view-transition-new(page-loader) {
+  animation-duration: var(--pt-leave);
+}
+
+/*
+ * Neutral (home, contacts, info pages, unknown and future routes) — the shared layers above as is:
+ * the old page fades into the warm brand background, the new one appears with a 12px rise.
+ */
+
+/* ---------- Photo zones — Soft Reveal ---------- */
+/* The sage veil parts from the centre like a set being unveiled; the new page settles from 3 %. */
+
+html[data-page-transition='photozones']::view-transition-new(root) {
+  animation-name: pt-soft-reveal;
+}
+
+/* ---------- Photography — Camera / Film Reveal ---------- */
+/* An abstract aperture opens over the powder veil and the page "develops": opacity + slight scale. */
+
+html[data-page-transition='photography']::view-transition-old(root) {
+  animation-name: pt-leave-close;
+}
+
+html[data-page-transition='photography']::view-transition-new(root) {
+  animation-name: pt-aperture;
+}
+
+/* ---------- Photobooks — Page Turn ---------- */
+/* The next page sweeps in from the right edge like an album spread; the old one slides under. */
+
+html[data-page-transition='photobooks']::view-transition-old(root) {
+  animation: pt-page-under calc(var(--pt-enter) + var(--pt-overlap)) var(--pt-ease) both;
+}
+
+html[data-page-transition='photobooks']::view-transition-new(root) {
+  animation-name: pt-page-turn;
+}
+
+/* ---------- AI photo booth — Flash / Image Reveal ---------- */
+/* A short warm light pulse on the sand veil (never pure white), then the image fades up from 2 %. */
+
+html[data-page-transition='photobooth']::view-transition {
+  animation: pt-flash calc(var(--pt-leave) + var(--pt-enter)) ease-out both;
+}
+
+html[data-page-transition='photobooth']::view-transition-new(root) {
+  animation-name: pt-image-reveal;
+}
+
+/* ---------- Keyframes ---------- */
+
+@keyframes pt-leave {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pt-leave-close {
+  to {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@keyframes pt-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes pt-soft-reveal {
+  from {
+    opacity: 0.35;
+    clip-path: inset(0 50% 0 50% round 1.5rem);
+    transform: scale(1.03);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 0);
+    transform: none;
+  }
+}
+
+@keyframes pt-aperture {
+  from {
+    opacity: 0.2;
+    clip-path: circle(6% at 50% 50%);
+    transform: scale(1.02);
+  }
+  45% {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 1;
+    /* 75 % of the circle reference box covers the viewport corners. */
+    clip-path: circle(75% at 50% 50%);
+    transform: none;
+  }
+}
+
+@keyframes pt-page-turn {
+  from {
+    opacity: 0.6;
+    clip-path: inset(0 0 0 100%);
+    transform: translateX(4%);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: none;
+  }
+}
+
+@keyframes pt-page-under {
+  to {
+    opacity: 0;
+    transform: translateX(-3%);
+  }
+}
+
+@keyframes pt-flash {
+  0% {
+    background-color: #f2ebdd;
+  }
+  30% {
+    background-color: #fcf8f0; /* soft warm light — deliberately not #fff */
+  }
+  100% {
+    background-color: #f2ebdd;
+  }
+}
+
+@keyframes pt-image-reveal {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+/* ---------- Accessibility ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition,
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

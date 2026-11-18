@@ -8,10 +8,10 @@
   /* ---------- Colour ---------- */
   --color-*: initial; /* drop Tailwind's default palette: only brand colours are allowed */
 
-  --color-bg: #f5f2ed;
+  --color-bg: #f7f6f1; /* warm off-white, never a cold white */
   --color-surface: #ffffff;
   --color-surface-muted: #ece7df; /* placeholders, quiet fills */
-  --color-text: #292724;
+  --color-text: #30302d; /* soft graphite, never pure black */
   /*
    * The brief's muted colour #81766D has 3.9:1 contrast on --color-bg,
    * below WCAG AA (4.5:1) for small text. --color-muted is a darker shade of
@@ -30,6 +30,16 @@
   --color-success: #287a50;
   --color-warning: #b7791f;
   --color-error: #b94747;
+
+  /*
+   * Service palette slots. Neutral by default; a [data-service] ancestor re-points them (see below).
+   * bg — large tinted section fills; surface — tinted cards / highlighted blocks;
+   * accent — decorative tone (lines, icons, numerals); text — dark text / dark panels.
+   */
+  --color-service-bg: var(--color-bg);
+  --color-service-surface: var(--color-surface-muted);
+  --color-service-accent: var(--color-muted-soft);
+  --color-service-text: var(--color-text);
 
   --color-white: #ffffff;
   --color-transparent: transparent;
@@ -88,26 +98,81 @@
   /* Elevation — used sparingly */
   --shadow-soft: 0 1px 2px rgb(41 39 36 / 0.04), 0 8px 24px -12px rgb(41 39 36 / 0.12);
   --shadow-raised: 0 2px 4px rgb(41 39 36 / 0.05), 0 18px 40px -20px rgb(41 39 36 / 0.22);
+
+  /* Dark-tone photo placeholders (PhotoFrame tone="dark"), until real photos arrive. */
+  --placeholder-dark: #3a3241;
+  --placeholder-dark-from: #3d3445;
+  --placeholder-dark-via: #2f2936;
 }
 
 /*
  * Service themes — a page-level mood on top of the same design system.
- * The wrapper of a service page re-points the accent tokens, so buttons, option cards, chips and
- * focus rings take the service colour; header, footer and everything else stay as they are.
+ * The layout sets data-service on <main> from the route's `service` meta (definePageMeta), so only
+ * the page gets the palette — header, footer, cart and toasts keep the shared MOMENTO look.
+ * Each theme sets:
  *
- * Photo zones: muted sage / olive. The brief's accent #747B62 is 4.4:1 against white text and
- * 3.6:1 on #E8E9DF — below AA for small text — so it stays a decorative tone (--pz-olive) and a
- * darker shade of the same hue is used for buttons and text (#5B624B: 6.4:1 / 5.2:1).
+ *   --color-service-bg / -surface / -accent / -text   the brief's palette, 1:1
+ *                                                     (utilities: bg-service-bg, text-service-accent…);
+ *   --color-accent / -hover / -soft                   buttons, links, chips, focus rings.
+ *
+ * The brief's accent colours are 3.2–4.4:1 against white button text and 2.7–3.6:1 on their own
+ * background — below WCAG AA for small text. So they stay decorative (--color-service-accent) and
+ * --color-accent is a darker shade of the same hue: ≥ 4.6:1 with white text and ≥ 4.5:1 on the
+ * service backgrounds.
+ *
+ * Ratio: tint only a few large sections (hero, final CTA, one highlight block) — about 15–25 % of a
+ * page; everything else stays on the neutral brand background / white surfaces.
  */
-.theme-photozones {
+[data-service='photozones'] {
+  /* Sage Green — nature, florals, harmony. */
+  --color-service-bg: #e8e9df;
+  --color-service-surface: #d3d7c5;
+  --color-service-accent: #747b62;
+  --color-service-text: #303329;
+
   --color-accent: #5b624b;
   --color-accent-hover: #4b513d;
   --color-accent-soft: #e8e9df;
+}
 
-  --pz-mist: #e8e9df; /* primary tint: hero, final CTA */
-  --pz-sage: #d3d7c5; /* secondary tint: illustrations, quiet fills */
-  --pz-olive: #747b62; /* decorative accent: lines, icons, large numerals */
-  --pz-paper: #f7f6f1; /* light background sections */
+[data-service='photography'] {
+  /* Dusty Rose — people, emotions, closeness. */
+  --color-service-bg: #f0e6e0;
+  --color-service-surface: #e8d9d0;
+  --color-service-accent: #a77e70;
+  --color-service-text: #493c38;
+
+  --color-accent: #75584e;
+  --color-accent-hover: #614941;
+  --color-accent-soft: #f0e6e0;
+}
+
+[data-service='photobooks'] {
+  /* Dusty Blue — family archive, printed stories. */
+  --color-service-bg: #e8eef0;
+  --color-service-surface: #d5dfe5;
+  --color-service-accent: #718b9b;
+  --color-service-text: #34434b;
+
+  --color-accent: #516470;
+  --color-accent-hover: #44535d;
+  --color-accent-soft: #e8eef0;
+}
+
+[data-service='photobooth'] {
+  /* Warm Sand — creativity and experiments, without neon "AI" clichés. */
+  --color-service-bg: #f2ebdd;
+  --color-service-surface: #e8d9b9;
+  --color-service-accent: #a88b58;
+  --color-service-text: #494033;
+
+  --color-accent: #6f5c3a;
+  --color-accent-hover: #5b4b30;
+  --color-accent-soft: #f2ebdd;
+
+  --placeholder-dark: #3e372d;
+  --placeholder-dark-from: #443c31;
+  --placeholder-dark-via: #312b23;
 }
 
 @media (min-width: 768px) {

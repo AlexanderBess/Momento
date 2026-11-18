@@ -29,7 +29,7 @@ watch(
 
 <template>
   <header
-    class="sticky top-0 z-40 border-b transition-[background-color,border-color,box-shadow] duration-(--motion-normal) ease-standard"
+    class="site-header sticky top-0 z-40 border-b transition-[background-color,border-color,box-shadow] duration-(--motion-normal) ease-standard"
     :class="
       scrolled || menuOpen
         ? 'border-border/70 bg-bg shadow-[0_1px_0_rgb(41_39_36/0.02),0_8px_24px_-20px_rgb(41_39_36/0.25)]'

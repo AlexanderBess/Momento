@@ -31,7 +31,7 @@ const [lead, ...rest] = photozoneCustomDirections
 
         <ul v-reveal="140" class="mt-8 grid gap-2.5 text-sm">
           <li v-for="item in ['Работаем с вашими референсами', 'Подбираем конструкции, цвета и декор', 'Стоимость рассчитываем индивидуально']" :key="item" class="flex items-center gap-3">
-            <span class="h-px w-5 bg-(--pz-olive)" aria-hidden="true" />
+            <span class="h-px w-5 bg-service-accent" aria-hidden="true" />
             {{ item }}
           </li>
         </ul>

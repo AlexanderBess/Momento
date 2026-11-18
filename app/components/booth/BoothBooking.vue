@@ -11,7 +11,7 @@ const orderLink = computed(() => buildOrderLink({ service: 'booth', event: selec
     <div class="container-page">
       <div v-reveal class="relative isolate flex flex-col items-center px-2 py-6 text-center md:py-10">
         <div
-          class="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[30rem] -translate-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(117_100_168/0.14),transparent)] md:size-[44rem]"
+          class="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[30rem] -translate-1/2 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--color-service-accent)_22%,transparent),transparent)] md:size-[44rem]"
           aria-hidden="true"
         />
         <p class="eyebrow">Заявка</p>

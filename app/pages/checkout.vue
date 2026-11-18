@@ -137,8 +137,8 @@ const positions = (n: number) =>
       </aside>
     </div>
 
-    <!-- Editors of positions, in their service's look (the theme class re-points the accent colour). -->
-    <div class="theme-photozones">
+    <!-- Editors of positions, in their service's look (data-service re-points the palette, tokens.css). -->
+    <div data-service="photozones">
       <PhotozoneDetailsDialog mode="edit" />
     </div>
   </section>

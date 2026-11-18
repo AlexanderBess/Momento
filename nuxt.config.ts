@@ -10,6 +10,13 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  experimental: {
+    // Page transitions: Nuxt wraps page-changing navigations in document.startViewTransition().
+    // `true` (not 'always') → skipped under prefers-reduced-motion. Presets: plugins/page-transitions.client.ts
+    // + assets/css/transitions.css.
+    viewTransition: true,
+  },
+
   runtimeConfig: {
     public: {
       // Where order requests are POSTed (CRM webhook / form service). Empty → forms say that online
@@ -27,7 +34,7 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'ru' },
       meta: [
         { name: 'description', content: brand.description },
-        { name: 'theme-color', content: '#F5F2ED' },
+        { name: 'theme-color', content: '#F7F6F1' },
         { name: 'format-detection', content: 'telephone=no' },
       ],
       link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
