@@ -13,7 +13,7 @@ const back: PhotobookConfig = { ...createConfig('littleMoments'), extras: { embo
     <div class="container-page">
       <div
         v-reveal
-        class="relative isolate grid items-center gap-8 overflow-hidden rounded-[1.75rem] bg-[#ece5da] px-6 py-12 sm:px-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:py-16 lg:px-16"
+        class="relative isolate grid items-center gap-8 overflow-hidden rounded-[1.75rem] bg-service-surface px-6 py-12 sm:px-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:py-16 lg:px-16"
       >
         <div
           class="pointer-events-none absolute top-1/2 right-[-10%] -z-10 size-[36rem] -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(255_255_255/0.75),transparent)]"

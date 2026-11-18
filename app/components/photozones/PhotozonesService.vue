@@ -27,7 +27,7 @@ const icons: Record<(typeof photozoneServiceSteps)[number]['id'], Component> = {
           v-reveal="i * 100"
           class="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-5 border-t border-border py-7 lg:grid-cols-1 lg:gap-y-6 lg:pt-8"
         >
-          <span class="inline-flex size-14 items-center justify-center rounded-full bg-(--pz-mist) text-(--color-accent)" aria-hidden="true">
+          <span class="inline-flex size-14 items-center justify-center rounded-full bg-service-bg text-(--color-accent)" aria-hidden="true">
             <component :is="icons[step.id]" class="size-6" :stroke-width="1.25" />
           </span>
           <div class="flex flex-col gap-1.5">
@@ -38,7 +38,7 @@ const icons: Record<(typeof photozoneServiceSteps)[number]['id'], Component> = {
         </li>
       </ol>
 
-      <p v-reveal class="mt-8 max-w-2xl border-l-2 border-(--pz-olive) pl-5 text-sm leading-relaxed text-muted md:mt-10">
+      <p v-reveal class="mt-8 max-w-2xl border-l-2 border-service-accent pl-5 text-sm leading-relaxed text-muted md:mt-10">
         Стоимость доставки зависит от расположения площадки — рассчитаем её вместе с заявкой. Декорации, в том числе
         изготовленные специально для вашего события, предоставляются в аренду и остаются собственностью MOMENTO.
       </p>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { brand } from '~/config/brand'
 
+definePageMeta({ service: 'photozones' })
+
 // Bespoke page for the photo zones service — takes precedence over services/[slug].vue.
 const title = 'Фотозоны в аренду — свадьбы, дни рождения, события'
 const description =
@@ -26,8 +28,7 @@ onBeforeUnmount(reset)
 </script>
 
 <template>
-  <div class="theme-photozones">
-    <!-- theme-photozones re-points the accent tokens to sage / olive for this page only (tokens.css). -->
+  <div>
     <PhotozonesHero />
     <PhotozonesFormats />
     <PhotozonesCatalog />

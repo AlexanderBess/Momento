@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { brand } from '~/config/brand'
 
+definePageMeta({ service: 'photography' })
+
 // Bespoke page for the photography service — takes precedence over services/[slug].vue.
 const title = 'Фотосъёмка в Новосибирске — портреты, Love Story, мероприятия'
 const description =

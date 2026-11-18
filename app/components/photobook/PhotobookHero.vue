@@ -75,7 +75,7 @@ const uid = useId()
 </script>
 
 <template>
-  <section class="pb-hero relative clip-x" aria-labelledby="photobook-hero-title">
+  <section class="pb-hero relative clip-x -mt-(--header-height) pt-(--header-height)" aria-labelledby="photobook-hero-title">
     <div
       class="container-page grid items-center gap-10 pt-8 pb-14 md:pt-12 md:pb-16 lg:min-h-[calc(100svh-var(--header-height))] lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-8 lg:py-10 xl:gap-12"
     >
@@ -256,7 +256,9 @@ const uid = useId()
 
 <style scoped>
 .pb-hero {
-  background: radial-gradient(55% 65% at 76% 48%, rgb(255 255 255 / 0.7), transparent 72%);
+  background:
+    radial-gradient(55% 65% at 76% 48%, rgb(255 255 255 / 0.7), transparent 72%),
+    var(--color-service-bg);
 }
 
 .hero-title {

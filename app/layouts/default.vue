@@ -2,6 +2,11 @@
 // A 1px sentinel at the very top: once it leaves the viewport the header switches to its solid surface.
 const topSentinel = useTemplateRef<HTMLDivElement>('topSentinel')
 const { isInView: atTop } = useInView(topSentinel, { initial: true, rootMargin: '16px 0px 0px 0px' })
+
+// Service pages declare `definePageMeta({ service })`; the palette applies to the page only, so the
+// header, footer and toasts keep the shared MOMENTO look. useRoute() here is synced with the rendered
+// page (it updates on page:finish), so the palette never switches before the new page is shown.
+const route = useRoute()
 </script>
 
 <template>
@@ -16,12 +21,13 @@ const { isInView: atTop } = useInView(topSentinel, { initial: true, rootMargin: 
 
     <AppHeader :scrolled="!atTop" />
 
-    <main id="main" class="flex-1" tabindex="-1">
+    <main id="main" class="flex-1" tabindex="-1" :data-service="route.meta.service">
       <slot />
     </main>
 
     <AppFooter />
 
     <ToastHost />
+    <PageLoader />
   </div>
 </template>

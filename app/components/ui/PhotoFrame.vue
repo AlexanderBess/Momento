@@ -37,7 +37,7 @@ const aspectRatio = computed(() =>
 <template>
   <div
     class="relative overflow-hidden"
-    :class="[tone === 'dark' ? 'bg-[#3a3241]' : 'bg-surface-muted', rounded && 'rounded-card', isFill && 'size-full']"
+    :class="[tone === 'dark' ? 'bg-(--placeholder-dark)' : 'bg-surface-muted', rounded && 'rounded-card', isFill && 'size-full']"
     :style="{ aspectRatio }"
   >
     <NuxtImg
@@ -63,7 +63,7 @@ const aspectRatio = computed(() =>
       :aria-label="`Демонстрационный плейсхолдер: ${image.alt}`"
       class="@container absolute inset-0 flex flex-col items-center justify-center gap-3 bg-linear-to-br p-6 text-center"
       :class="[
-        tone === 'dark' ? 'from-[#3d3445] via-[#2f2936] to-accent/45' : 'from-surface-muted via-bg to-accent-soft/60',
+        tone === 'dark' ? 'from-(--placeholder-dark-from) via-(--placeholder-dark-via) to-accent/45' : 'from-surface-muted via-bg to-accent-soft/60',
         zoomOnHover && 'transition-transform duration-(--motion-slow) ease-standard group-hover:scale-[1.03]',
       ]"
     >

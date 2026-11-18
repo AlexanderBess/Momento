@@ -35,7 +35,7 @@ function chooseCustom() {
 
 <template>
   <section id="photozones-cta" class="px-2 pb-2 sm:px-3 sm:pb-3 lg:px-4 lg:pb-4" aria-labelledby="pz-cta-title">
-    <div class="overflow-hidden rounded-[1.5rem] bg-(--pz-mist) sm:rounded-[1.75rem]">
+    <div class="overflow-hidden rounded-[1.5rem] bg-service-bg sm:rounded-[1.75rem]">
       <div class="container-page grid gap-10 py-14 md:py-20 lg:grid-cols-12 lg:items-center lg:gap-12">
         <ClipReveal class="lg:col-span-6">
           <PhotozoneVisual :asset="photozonesFinalCta.visual" ratio="4 / 3" sizes="720px lg:600px" />
@@ -85,7 +85,7 @@ function chooseCustom() {
       <p class="text-[0.9375rem] text-muted">Выберите готовую фотозону из коллекции или индивидуальный проект.</p>
       <div class="mt-6 grid gap-3">
         <button type="button" class="option-card flex items-center gap-4 p-4 text-left" @click="chooseReady">
-          <span class="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-(--pz-mist) text-(--color-accent)" aria-hidden="true">
+          <span class="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-service-bg text-(--color-accent)" aria-hidden="true">
             <ArrowDown class="size-5" :stroke-width="1.5" />
           </span>
           <span class="flex flex-col">
@@ -94,7 +94,7 @@ function chooseCustom() {
           </span>
         </button>
         <button type="button" class="option-card flex items-center gap-4 p-4 text-left" @click="chooseCustom">
-          <span class="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-(--pz-mist) text-(--color-accent)" aria-hidden="true">
+          <span class="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-service-bg text-(--color-accent)" aria-hidden="true">
             <Sparkles class="size-5" :stroke-width="1.5" />
           </span>
           <span class="flex flex-col">

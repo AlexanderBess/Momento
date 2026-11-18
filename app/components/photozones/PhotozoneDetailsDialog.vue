@@ -88,12 +88,12 @@ function submit() {
 
       <!-- ---------- Info ---------- -->
       <div class="flex flex-col">
-        <p v-if="mode === 'edit'" class="mb-4 rounded-input bg-(--pz-mist) px-4 py-2.5 text-sm">
+        <p v-if="mode === 'edit'" class="mb-4 rounded-input bg-service-bg px-4 py-2.5 text-sm">
           Редактирование позиции заявки — измените опции и сохраните.
         </p>
         <div class="flex flex-wrap items-center gap-3">
           <p class="eyebrow text-(--color-accent)">{{ photozoneCategoryNames[concept.category] }}</p>
-          <span class="h-px w-8 bg-(--pz-olive)/40" aria-hidden="true" />
+          <span class="h-px w-8 bg-service-accent/40" aria-hidden="true" />
           <p class="eyebrow">Концепция оформления</p>
         </div>
         <p class="mt-4 text-[0.9375rem] leading-relaxed">{{ concept.description }}</p>
@@ -108,7 +108,7 @@ function submit() {
         <h3 class="mt-6 text-sm font-semibold">Состав декорации</h3>
         <ul class="mt-3 grid gap-2 text-[0.9375rem] text-muted">
           <li v-for="item in concept.composition" :key="item" class="flex gap-3">
-            <span class="mt-2.5 h-px w-3 shrink-0 bg-(--pz-olive)" aria-hidden="true" />
+            <span class="mt-2.5 h-px w-3 shrink-0 bg-service-accent" aria-hidden="true" />
             {{ item }}
           </li>
         </ul>

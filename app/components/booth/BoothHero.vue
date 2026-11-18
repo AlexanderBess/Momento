@@ -161,7 +161,7 @@ onBeforeUnmount(() => {
         <div class="relative self-center">
           <!-- Light pool behind the collage -->
           <div
-            class="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[120%] -translate-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(117_100_168/0.42),transparent)]"
+            class="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[120%] -translate-1/2 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--color-service-accent)_40%,transparent),transparent)]"
             aria-hidden="true"
           />
 
@@ -177,7 +177,7 @@ onBeforeUnmount(() => {
               :style="{ '--depth': portrait.slot.depth, '--delay': `${portrait.slot.delay}ms` }"
             >
               <div
-                class="rounded-[0.875rem] bg-[#352e3c] p-1.5 shadow-[0_24px_48px_-24px_rgb(0_0_0/0.65)] ring-1 ring-white/12 sm:p-2"
+                class="rounded-[0.875rem] bg-[#3a3329] p-1.5 shadow-[0_24px_48px_-24px_rgb(0_0_0/0.65)] ring-1 ring-white/12 sm:p-2"
               >
                 <PhotoFrame
                   :image="portrait.image"
@@ -237,16 +237,16 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .booth-stage {
-  /* Hero-only palette, derived from brand tokens. */
-  --hero-bg: #29232f;
-  --hero-accent: color-mix(in oklab, var(--color-accent) 55%, var(--color-white));
+  /* Hero-only palette, derived from the Warm Sand service tokens: a dark warm stage, sand light. */
+  --hero-bg: color-mix(in oklab, var(--color-service-text) 62%, #000);
+  --hero-accent: var(--color-service-surface);
   background-color: var(--hero-bg);
 }
 
 .booth-ambient {
   background:
-    radial-gradient(60% 55% at 78% 38%, rgb(117 100 168 / 0.32), transparent 70%),
-    radial-gradient(45% 50% at 0% 100%, rgb(117 100 168 / 0.16), transparent 70%),
+    radial-gradient(60% 55% at 78% 38%, color-mix(in oklab, var(--color-service-accent) 34%, transparent), transparent 70%),
+    radial-gradient(45% 50% at 0% 100%, color-mix(in oklab, var(--color-service-accent) 16%, transparent), transparent 70%),
     linear-gradient(180deg, rgb(255 255 255 / 0.03), transparent 40%);
 }
 

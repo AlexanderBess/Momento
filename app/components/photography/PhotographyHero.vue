@@ -18,13 +18,13 @@ const categories = ['Portraits', 'Love Stories', 'Family', 'Events', 'Business']
 </script>
 
 <template>
-  <section id="photography-hero" class="clip-x" aria-labelledby="photo-hero-title">
+  <section id="photography-hero" class="clip-x -mt-(--header-height) bg-service-bg pt-(--header-height)" aria-labelledby="photo-hero-title">
     <div
       class="container-page grid gap-10 pt-6 pb-14 sm:pt-10 md:pb-20 lg:min-h-[calc(100svh-var(--header-height))] lg:grid-cols-12 lg:grid-rows-[auto_1fr_auto] lg:gap-x-8 lg:gap-y-10 lg:pt-12 lg:pb-12"
     >
       <!-- ---------- Top line ---------- -->
       <div
-        class="flex items-center gap-4 border-b border-border pb-4 motion-safe:animate-hero-enter lg:col-span-12"
+        class="flex items-center gap-4 border-b border-service-accent/25 pb-4 motion-safe:animate-hero-enter lg:col-span-12"
       >
         <p class="eyebrow text-text">MOMENTO / PHOTOGRAPHY</p>
         <span class="h-px flex-1 bg-transparent" aria-hidden="true" />

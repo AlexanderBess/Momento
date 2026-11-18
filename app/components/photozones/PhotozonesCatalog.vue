@@ -30,7 +30,7 @@ const { ready } = useCart()
 </script>
 
 <template>
-  <section id="collection" class="section-y bg-(--pz-paper)" aria-labelledby="pz-collection-title">
+  <section id="collection" class="section-y bg-bg" aria-labelledby="pz-collection-title">
     <div class="container-page">
       <div class="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-8">
         <div class="lg:col-span-7">
@@ -89,7 +89,7 @@ const { ready } = useCart()
 
             <div class="mt-6 flex items-center gap-3">
               <p class="eyebrow text-(--color-accent)">{{ photozoneCategoryNames[concept.category] }}</p>
-              <span class="h-px w-8 bg-(--pz-olive)/40" aria-hidden="true" />
+              <span class="h-px w-8 bg-service-accent/40" aria-hidden="true" />
               <p class="eyebrow">Концепция</p>
             </div>
             <h3 :id="`pz-${concept.id}`" class="mt-3 font-display text-[clamp(1.875rem,1.5rem+1.4vw,2.5rem)] leading-tight">

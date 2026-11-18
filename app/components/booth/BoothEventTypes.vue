@@ -32,7 +32,7 @@ const ratios = [
 </script>
 
 <template>
-  <section id="events" class="section-y" aria-labelledby="events-title">
+  <section id="events" class="section-y bg-service-bg" aria-labelledby="events-title">
     <div class="container-page">
       <SectionHeading
         v-reveal

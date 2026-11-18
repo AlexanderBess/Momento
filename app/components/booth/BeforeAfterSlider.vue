@@ -158,7 +158,7 @@ const ariaValueText = computed(
       <!-- While real images are missing, tint the AI side so the two halves are distinguishable. -->
       <div
         v-if="!after.src"
-        class="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgb(117_100_168/0.38),rgb(117_100_168/0.08)_55%,rgb(41_39_36/0.18))]"
+        class="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,color-mix(in_oklab,var(--color-service-accent)_42%,transparent),color-mix(in_oklab,var(--color-service-accent)_10%,transparent)_55%,rgb(48_48_45/0.18))]"
         aria-hidden="true"
       />
     </div>
