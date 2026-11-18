@@ -21,5 +21,7 @@ const { isInView: atTop } = useInView(topSentinel, { initial: true, rootMargin: 
     </main>
 
     <AppFooter />
+
+    <ToastHost />
   </div>
 </template>

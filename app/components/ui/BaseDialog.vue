@@ -43,6 +43,9 @@ onMounted(() => {
 })
 
 function onClose() {
+  // The `close` event is dispatched asynchronously. If the dialog was reopened in the meantime
+  // (close → open again quickly), this event is stale and must not close the new session.
+  if (dialog.value?.open) return
   document.documentElement.style.overflow = ''
   open.value = false
 }
@@ -65,6 +68,7 @@ defineExpose({ el: dialog })
     class="base-dialog"
     :class="`size-${props.size}`"
     :aria-labelledby="`${uid}-title`"
+    @cancel="open = false"
     @close="onClose"
     @click="onClick"
   >
