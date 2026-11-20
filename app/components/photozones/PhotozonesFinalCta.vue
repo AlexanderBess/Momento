@@ -1,24 +1,44 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowRight, ShoppingBag, Sparkles } from '@lucide/vue'
+import { ArrowDown, ArrowRight, Plus, Sparkles } from '@lucide/vue'
 import { photozonesFinalCta } from '~/config/photozones'
-import { cartLink } from '~/config/navigation'
 
 /*
- * Closing block on the sage mist tint. «Добавить в заявку» uses the visitor's current choice on
- * the page (a concept opened in the catalogue with its options, or the individual project).
- * Without a choice it asks which one — nothing undefined is ever added silently.
+ * Closing block on the sage mist tint. Both actions use the visitor's current choice on the page
+ * (a concept opened in the catalogue with its options, or the individual project):
+ *   «Отправить заявку» — sync the choice and open the request form;
+ *   «Добавить к общей заявке» — add it and stay here.
+ * Without a choice it asks which one — nothing undefined is ever added silently. «Отправить
+ * заявку» with photo zones already in the selection simply opens the form.
  */
-const { selection, selectionLabel, addSelection, addCustom } = usePhotozoneOrder()
-const { count, ready } = useCart()
+const { selection, selectionLabel, selectionItem, addCustom, submitCustom } = usePhotozoneOrder()
+const { items } = useCart()
+const { addToSelection, submitWith, goToCheckout } = useSelection()
 
 const chooserOpen = ref(false)
+const pendingAction = ref<'add' | 'submit'>('add')
 
 function onAdd() {
-  if (!selection.value) {
+  const current = selectionItem()
+  if (!current) {
+    pendingAction.value = 'add'
     chooserOpen.value = true
     return
   }
-  addSelection()
+  addToSelection(current.item, current.label)
+}
+
+function onSubmit() {
+  const current = selectionItem()
+  if (current) {
+    submitWith(current.item)
+    return
+  }
+  if (items.value.some((i) => i.service === 'photozones')) {
+    goToCheckout()
+    return
+  }
+  pendingAction.value = 'submit'
+  chooserOpen.value = true
 }
 
 function chooseReady() {
@@ -29,7 +49,8 @@ function chooseReady() {
 
 function chooseCustom() {
   chooserOpen.value = false
-  addCustom()
+  if (pendingAction.value === 'submit') submitCustom()
+  else addCustom()
 }
 </script>
 
@@ -54,34 +75,30 @@ function chooseCustom() {
             <p v-if="selectionLabel" class="text-sm" aria-live="polite">
               <span class="text-muted">Ваш выбор:</span> <span class="font-semibold">{{ selectionLabel }}</span>
             </p>
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
-              <BaseButton size="lg" class="w-full sm:w-auto" @click="onAdd">
-                <ShoppingBag class="size-4" :stroke-width="2" aria-hidden="true" />
-                Добавить в заявку
+            <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <BaseButton size="lg" class="w-full sm:w-auto" @click="onSubmit">
+                Отправить заявку
+                <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
               </BaseButton>
-              <NuxtLink
-                v-if="ready && count"
-                :to="cartLink.to"
-                class="group inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold underline-offset-[6px] hover:underline"
-              >
-                Перейти в корзину
-                <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" :stroke-width="2" aria-hidden="true" />
-              </NuxtLink>
-              <NuxtLink
-                v-else-if="selection"
-                to="#collection"
-                class="inline-flex min-h-11 items-center justify-center text-sm font-semibold underline-offset-[6px] hover:underline"
-              >
-                Изменить выбор
-              </NuxtLink>
+              <BaseButton size="lg" variant="secondary" class="w-full sm:w-auto" @click="onAdd">
+                <Plus class="size-4" :stroke-width="2" aria-hidden="true" />
+                Добавить к общей заявке
+              </BaseButton>
             </div>
+            <NuxtLink
+              v-if="selection"
+              to="#collection"
+              class="inline-flex min-h-11 items-center self-start text-sm font-semibold underline-offset-[6px] hover:underline"
+            >
+              Изменить выбор
+            </NuxtLink>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Asked only when nothing is chosen yet. -->
-    <BaseDialog v-model:open="chooserOpen" title="Что добавить в заявку?">
+    <BaseDialog v-model:open="chooserOpen" title="Какую фотозону выбрать?">
       <p class="text-[0.9375rem] text-muted">Выберите готовую фотозону из коллекции или индивидуальный проект.</p>
       <div class="mt-6 grid gap-3">
         <button type="button" class="option-card flex items-center gap-4 p-4 text-left" @click="chooseReady">

@@ -24,7 +24,7 @@ export const photographyHero = {
 
 /* ---------- Photography formats ---------- */
 
-/** Every format is also a `direction` of the shared order contract (config/order.ts). */
+/** Every format is also a `direction` of the photography position in «Моя подборка». */
 export type PhotographyFormatId = 'portraits' | 'love-stories' | 'family' | 'events' | 'business'
 
 /** Group A — the two main directions, each with a large photo. */
@@ -200,9 +200,6 @@ export const photographyExtras: PhotographyExtra[] = [
   },
 ]
 
-/** Other MOMENTO services that can be added to the same request. */
-export const photographyBundleServices: ServiceSlug[] = ['booth', 'photozones']
-
 /* ---------- MOMENTO Extras ---------- */
 
 export interface PhotographyCrossSell {
@@ -288,13 +285,3 @@ export const photographyFaq: FaqItem[] = [
   },
 ]
 
-/* ---------- Order integration ---------- */
-
-/** Labels of the page's orderable options, used by the shared order contract (config/order.ts). */
-export const photographyOrderOptions = {
-  packages: Object.fromEntries(photographyPackages.map((p) => [p.id, `${p.name} — ${p.title}`])),
-  extras: Object.fromEntries(photographyExtras.filter((e) => e.available).map((e) => [e.id, e.title])),
-  directions: Object.fromEntries(
-    [...photographyMainFormats, ...photographyMoreFormats].map((f) => [f.id, f.title]),
-  ),
-}

@@ -1,42 +1,27 @@
+import type { LeadRequest, LeadResponse } from '#shared/lead'
+
 /**
- * Lead delivery — the single integration point for order requests from any page.
+ * Lead delivery — the single client-side integration point for requests.
  *
- * The site has no backend of its own yet. Requests are POSTed as JSON to the endpoint configured in
- * `runtimeConfig.public.leadsEndpoint` (env `NUXT_PUBLIC_LEADS_ENDPOINT`): a CRM webhook, a form
- * service or a future /api route. Without an endpoint nothing is sent and the caller gets
- * `not-configured` — the UI must never pretend a request was delivered.
+ * Posts to the site's own endpoint (/api/leads), which forwards to Telegram; secrets never reach
+ * the browser. Only a confirmed `{ ok: true }` from the server counts as delivered. A timeout or a
+ * dropped connection is `network`: the request may or may not have arrived, so the caller retries
+ * with the same idempotency key and the server will not deliver it twice.
  */
-
-export interface LeadContact {
-  name: string
-  phone: string
-  email: string | null
-  preferredChannel: string
-  comment: string | null
-}
-
-export interface Lead<TPayload = unknown> {
-  service: string
-  contact: LeadContact
-  /** Structured, service-specific details (e.g. the photobook configuration). */
-  payload: TPayload
-  consent: { personalData: true; at: string }
-  source: { page: string }
-}
-
-export type LeadResult = { ok: true } | { ok: false; reason: 'not-configured' | 'network' | 'rejected' }
-
-export async function submitLead(lead: Lead, endpoint: string | undefined): Promise<LeadResult> {
-  if (!endpoint) return { ok: false, reason: 'not-configured' }
-
+export async function submitLead(lead: LeadRequest): Promise<LeadResponse> {
   try {
-    const response = await fetch(endpoint, {
+    const response = await fetch('/api/leads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(lead),
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(30000),
     })
-    return response.ok ? { ok: true } : { ok: false, reason: 'rejected' }
+    const data = (await response.json().catch(() => null)) as LeadResponse | null
+    if (data && typeof data.ok === 'boolean') {
+      if (data.ok && response.ok && typeof data.requestNumber === 'string') return data
+      if (!data.ok) return data
+    }
+    return { ok: false, reason: response.status === 404 ? 'not-configured' : 'rejected' }
   } catch {
     return { ok: false, reason: 'network' }
   }

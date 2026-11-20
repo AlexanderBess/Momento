@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { Check, ShoppingBag } from '@lucide/vue'
+import { ArrowRight, Check, Plus } from '@lucide/vue'
 import { photozoneCustomDirections } from '~/config/photozones'
 
 /*
  * Individual projects: copy and the add-to-request action on one side, three visual directions
  * (florals / structures / personalisation) on the other — one large frame and two smaller ones.
  * On phones the directions become a horizontal snap row, so the section stays short.
- * The button adds «Фотозоны — индивидуальный проект» (price «Обсуждается») to the shared cart.
+ * «Отправить заявку» / «Добавить к общей заявке» put «Фотозоны — индивидуальный проект»
+ * (price «Обсуждается») into «Моя подборка»; the idea itself is described in its editor there.
  */
-const { addCustom, customInCart } = usePhotozoneOrder()
+const { addCustom, submitCustom, customInCart } = usePhotozoneOrder()
 const { ready } = useCart()
 const inCart = computed(() => ready.value && customInCart.value)
 
@@ -37,10 +38,16 @@ const [lead, ...rest] = photozoneCustomDirections
         </ul>
 
         <div v-reveal="180" class="mt-10 flex flex-col gap-3 sm:items-start">
-          <BaseButton size="lg" :variant="inCart ? 'secondary' : 'primary'" class="w-full sm:w-auto" @click="addCustom">
-            <component :is="inCart ? Check : ShoppingBag" class="size-4" :stroke-width="2" aria-hidden="true" />
-            {{ inCart ? 'Индивидуальный проект в заявке' : 'Выбрать индивидуальный проект' }}
-          </BaseButton>
+          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+            <BaseButton size="lg" class="w-full sm:w-auto" @click="submitCustom">
+              Отправить заявку
+              <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
+            </BaseButton>
+            <BaseButton size="lg" variant="secondary" class="w-full sm:w-auto" @click="addCustom">
+              <component :is="inCart ? Check : Plus" class="size-4" :stroke-width="2" aria-hidden="true" />
+              {{ inCart ? 'Проект в подборке' : 'Добавить к общей заявке' }}
+            </BaseButton>
+          </div>
           <p class="text-xs text-muted">Стоимость: обсуждается. Изготовленные элементы также предоставляются в аренду.</p>
         </div>
       </div>

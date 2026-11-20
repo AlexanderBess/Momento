@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ArrowRight, ArrowUpRight } from '@lucide/vue'
-import { buildOrderLink } from '~/config/order'
 import { photographyMainFormats, photographyMoreFormats } from '~/config/photography'
 
 /*
@@ -9,22 +8,21 @@ import { photographyMainFormats, photographyMoreFormats } from '~/config/photogr
  * Group A: Portraits and Love Stories as two large editorial spreads (photo and copy swap sides on
  * desktop, frames of different proportions, hairline dividers; on mobile — photo, title, text, action).
  * Group B: three more formats as a compact text list without photos, deliberately quieter than group A.
- * Every action opens the shared order flow prefilled with the format (`?direction=`).
+ * Every action picks the format as the direction of the shoot and scrolls to the packages.
  */
 
 const pad = (n: number) => String(n).padStart(2, '0')
+const { selectDirection } = usePhotographyOrder()
 
 const main = photographyMainFormats.map((format, index) => ({
   ...format,
   index: pad(index + 1),
   reversed: index % 2 === 1,
-  orderLink: buildOrderLink({ service: 'photography', direction: format.id }),
 }))
 
 const more = photographyMoreFormats.map((format, index) => ({
   ...format,
   index: pad(main.length + index + 1),
-  orderLink: buildOrderLink({ service: 'photography', direction: format.id }),
 }))
 </script>
 
@@ -82,8 +80,9 @@ const more = photographyMoreFormats.map((format, index) => ({
             {{ format.description }}
           </p>
           <NuxtLink
-            :to="format.orderLink"
+            to="#pricing"
             class="group/link mt-8 inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-accent underline-offset-[6px] hover:underline"
+            @click="selectDirection(format.id)"
           >
             Обсудить съёмку
             <ArrowRight
@@ -101,9 +100,10 @@ const more = photographyMoreFormats.map((format, index) => ({
         <ul class="mt-6 grid md:grid-cols-3 md:gap-8">
           <li v-for="(format, i) in more" :key="format.id" v-reveal="i * 90" class="border-t border-border md:border-t-0">
             <NuxtLink
-              :to="format.orderLink"
-              class="group grid grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-x-3 py-6 md:block md:border-l md:border-border md:py-1 md:pl-6"
+              to="#pricing"
+            class="group grid grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-x-3 py-6 md:block md:border-l md:border-border md:py-1 md:pl-6"
               :aria-label="`${format.title} — обсудить съёмку`"
+              @click="selectDirection(format.id)"
             >
               <span class="pt-0.5 font-display text-lg text-muted italic md:block" aria-hidden="true">{{ format.index }}</span>
               <span class="flex flex-col gap-1.5 md:mt-3">

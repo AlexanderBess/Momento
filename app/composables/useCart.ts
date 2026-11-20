@@ -1,61 +1,111 @@
-import type { CartAddResult, CartItem } from '~/types/cart'
+import type { CartAddResult, CartItem, CartItemInput } from '~/types/cart'
+import type { ServiceSlug } from '~/types/service'
 import { services } from '~/config/services'
+import { createId, sortKeys } from '~/lib/ids'
 
 /**
- * The shared MOMENTO request (cart). One list for all services, shown at /checkout and counted on
- * the header bag icon.
+ * The shared MOMENTO selection («Моя подборка»): one list for all services, shown in the header
+ * drawer and on /checkout.
  *
  * Stored in localStorage on this device only — nothing is sent anywhere until the visitor submits
  * the request. During SSR and hydration the list is empty; plugins/cart.client.ts loads the saved
- * list right after the app is mounted (no hydration mismatch) and keeps tabs in sync.
+ * list right after hydration (no mismatch) and keeps open tabs in sync via `storage` events.
+ *
+ * Retention: the selection is dropped 30 days after the last *activity* — a successful add, change
+ * or removal of a position. `lastActivityAt` is stored next to the list (independent of each
+ * position's own `updatedAt`); only reading the list (opening the drawer) never extends it.
  */
 
-export const CART_STORAGE_KEY = 'momento:cart:v1'
+export const CART_STORAGE_KEY = 'momento:cart:v2'
+const LEGACY_STORAGE_KEY = 'momento:cart:v1'
+export const CART_TTL_MS = 30 * 24 * 60 * 60 * 1000
+
+/** Services that hold at most one position: a different configuration replaces it (after a confirm). */
+export const SINGLE_POSITION_SERVICES: readonly ServiceSlug[] = ['booth', 'photography']
+
+interface StoredCart {
+  version: 2
+  lastActivityAt: number
+  items: CartItem[]
+}
 
 const serviceSlugs = new Set<string>(services.map((s) => s.slug))
 
+function isItem(item: unknown): item is CartItem {
+  if (typeof item !== 'object' || item === null) return false
+  const i = item as Record<string, unknown>
+  return (
+    typeof i.id === 'string' &&
+    typeof i.key === 'string' &&
+    typeof i.title === 'string' &&
+    serviceSlugs.has(i.service as string) &&
+    Array.isArray(i.details) &&
+    (i.price === null || typeof i.price === 'number') &&
+    Number.isInteger(i.quantity) &&
+    (i.quantity as number) > 0 &&
+    typeof i.config === 'object' &&
+    i.config !== null
+  )
+}
+
 /** Drops anything that is not a well-formed position (old versions, manual edits). */
-export function parseStoredCart(raw: string | null): CartItem[] {
-  if (!raw) return []
+function sanitize(list: unknown[]): CartItem[] {
+  const seen = new Set<string>()
+  return list.filter(isItem).filter((item) => {
+    // One position per key and per id, whatever the storage contains.
+    const fresh = !seen.has(item.key) && !seen.has(`#${item.id}`)
+    seen.add(item.key)
+    seen.add(`#${item.id}`)
+    return fresh
+  })
+}
+
+/**
+ * Reads the stored selection. Returns `expired: true` when the last activity is 30+ days old —
+ * the caller then removes the stored data.
+ */
+export function readStoredCart(storage: Storage, now = Date.now()): { items: CartItem[]; lastActivityAt: number | null; expired: boolean } {
   try {
-    const data: unknown = JSON.parse(raw)
-    if (!Array.isArray(data)) return []
-    return data.filter(
-      (item): item is CartItem =>
-        typeof item === 'object' &&
-        item !== null &&
-        typeof item.key === 'string' &&
-        typeof item.title === 'string' &&
-        serviceSlugs.has(item.service) &&
-        Array.isArray(item.details) &&
-        (item.price === null || typeof item.price === 'number') &&
-        Number.isInteger(item.quantity) &&
-        item.quantity > 0 &&
-        typeof item.config === 'object' &&
-        item.config !== null,
-    )
+    const raw = storage.getItem(CART_STORAGE_KEY)
+    if (raw) {
+      const data = JSON.parse(raw) as Partial<StoredCart>
+      const last = typeof data.lastActivityAt === 'number' ? data.lastActivityAt : null
+      if (last === null || now - last >= CART_TTL_MS) return { items: [], lastActivityAt: null, expired: true }
+      return { items: sanitize(Array.isArray(data.items) ? data.items : []), lastActivityAt: last, expired: false }
+    }
+
+    // v1 stored a bare array without ids or activity time: migrate once.
+    const legacy = storage.getItem(LEGACY_STORAGE_KEY)
+    if (legacy) {
+      const data: unknown = JSON.parse(legacy)
+      const list = Array.isArray(data) ? data : []
+      const items = sanitize(list.map((item) => (typeof item === 'object' && item ? { id: createId('pos'), ...item } : item)))
+      const last = items.reduce((max, i) => Math.max(max, typeof i.updatedAt === 'number' ? i.updatedAt : 0), 0) || now
+      storage.removeItem(LEGACY_STORAGE_KEY)
+      if (now - last >= CART_TTL_MS) return { items: [], lastActivityAt: null, expired: true }
+      storage.setItem(CART_STORAGE_KEY, JSON.stringify({ version: 2, lastActivityAt: last, items } satisfies StoredCart))
+      return { items, lastActivityAt: last, expired: false }
+    }
   } catch {
-    return []
+    // Broken JSON / blocked storage → start empty.
   }
+  return { items: [], lastActivityAt: null, expired: false }
 }
 
 /** Stable comparison of two configurations (key order does not matter). */
-function sameContent(a: CartItem, b: CartItem): boolean {
-  const normalize = (item: CartItem) =>
-    JSON.stringify([item.title, item.subtitle, item.details, item.price, item.pricePartial, item.quantity, sortKeys(item.config)])
+function sameContent(a: CartItemInput, b: CartItemInput): boolean {
+  const normalize = (item: CartItemInput) =>
+    JSON.stringify([
+      item.title,
+      item.subtitle,
+      item.details,
+      item.status,
+      item.price,
+      item.pricePartial,
+      item.quantity,
+      sortKeys(item.config),
+    ])
   return normalize(a) === normalize(b)
-}
-
-function sortKeys(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sortKeys)
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.keys(value)
-        .sort()
-        .map((k) => [k, sortKeys((value as Record<string, unknown>)[k])]),
-    )
-  }
-  return value
 }
 
 export function useCart() {
@@ -63,42 +113,107 @@ export function useCart() {
   /** True once the saved list has been read — before that the count is unknown, not zero. */
   const ready = useState('cart-ready', () => false)
 
-  function persist() {
+  /** Re-reads the stored list (another tab may have changed it) and drops it when expired. */
+  function load() {
     if (import.meta.server) return
     try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items.value))
+      const stored = readStoredCart(localStorage)
+      if (stored.expired) localStorage.removeItem(CART_STORAGE_KEY)
+      items.value = stored.items
     } catch {
-      // Private mode / full storage: the cart still works for this visit.
+      // Storage unavailable: keep what this tab has.
+    }
+    ready.value = true
+  }
+
+  /**
+   * Every change: read the latest stored list first (so two tabs never overwrite each other's
+   * positions), apply the change, save it together with the new activity time.
+   */
+  function mutate(change: (list: CartItem[]) => CartItem[]) {
+    if (import.meta.client) {
+      try {
+        const stored = readStoredCart(localStorage)
+        items.value = stored.items
+      } catch {
+        // Keep the in-memory list.
+      }
+    }
+    items.value = change(items.value)
+    if (import.meta.server) return
+    try {
+      if (items.value.length) {
+        const data: StoredCart = { version: 2, lastActivityAt: Date.now(), items: items.value }
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(data))
+      } else {
+        localStorage.removeItem(CART_STORAGE_KEY)
+      }
+    } catch {
+      // Private mode / full storage: the selection still works for this visit.
     }
   }
 
-  /** Adds a position, or updates the one with the same key. */
-  function add(item: Omit<CartItem, 'updatedAt'>): CartAddResult {
-    const next: CartItem = { ...item, updatedAt: Date.now() }
-    const index = items.value.findIndex((i) => i.key === item.key)
-    if (index === -1) {
-      items.value = [...items.value, next]
-      persist()
-      return 'added'
-    }
-    if (sameContent(items.value[index]!, next)) return 'unchanged'
-    items.value = items.value.map((i, n) => (n === index ? next : i))
-    persist()
-    return 'updated'
+  /**
+   * Adds a position, or updates the one with the same key.
+   * Single-position services return `needs-replace` for a different configuration unless
+   * `replace` is set — the visitor confirms that first.
+   */
+  function add(input: CartItemInput, { replace = false } = {}): CartAddResult {
+    let result: CartAddResult = 'added'
+    mutate((list) => {
+      const single = SINGLE_POSITION_SERVICES.includes(input.service)
+      const index = list.findIndex((i) => (single ? i.service === input.service : i.key === input.key))
+      if (index === -1) {
+        result = 'added'
+        return [...list, { ...input, id: createId('pos'), updatedAt: Date.now() }]
+      }
+      const current = list[index]!
+      if (sameContent(current, input)) {
+        result = 'unchanged'
+        return list
+      }
+      if (single && !replace) {
+        result = 'needs-replace'
+        return list
+      }
+      result = 'updated'
+      return list.map((i, n) => (n === index ? { ...input, id: current.id, updatedAt: Date.now() } : i))
+    })
+    return result
   }
 
-  function remove(key: string) {
-    items.value = items.value.filter((i) => i.key !== key)
-    persist()
+  /**
+   * Replaces the content of an existing position (editor «Сохранить», Book Studio sync).
+   * Keeps the position id. Returns false when the position is gone (removed meanwhile) — it is
+   * never re-created here.
+   */
+  function update(id: string, input: CartItemInput): 'updated' | 'unchanged' | 'missing' {
+    let result: 'updated' | 'unchanged' | 'missing' = 'missing'
+    mutate((list) => {
+      const index = list.findIndex((i) => i.id === id)
+      if (index === -1) return list
+      if (sameContent(list[index]!, input)) {
+        result = 'unchanged'
+        return list
+      }
+      result = 'updated'
+      return list.map((i, n) => (n === index ? { ...input, id, updatedAt: Date.now() } : i))
+    })
+    return result
   }
 
+  function remove(id: string) {
+    mutate((list) => list.filter((i) => i.id !== id))
+  }
+
+  /** Drops the whole selection (after a successfully delivered request). */
   function clear() {
-    items.value = []
-    persist()
+    mutate(() => [])
   }
 
   const has = (key: string) => items.value.some((i) => i.key === key)
   const find = (key: string) => items.value.find((i) => i.key === key)
+  const findById = (id: string) => items.value.find((i) => i.id === id)
 
   /** Number of positions (not units) — what the header badge shows. */
   const count = computed(() => items.value.length)
@@ -115,5 +230,5 @@ export function useCart() {
     }
   })
 
-  return { items, ready, count, total, add, remove, clear, has, find }
+  return { items, ready, count, total, load, add, update, remove, clear, has, find, findById }
 }

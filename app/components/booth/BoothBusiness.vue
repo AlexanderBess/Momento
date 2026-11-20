@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ArrowRight, Check } from '@lucide/vue'
 import { boothBusinessImage, boothBusinessPoints } from '~/config/booth'
-import { buildOrderLink } from '~/config/order'
-
-const corporateLink = buildOrderLink({ service: 'booth', event: 'corporate' })
+// «Обсудить» picks the corporate event type and leads to the request block.
+const event = useBoothEvent()
 
 const media = useTemplateRef<HTMLDivElement>('media')
 useParallax(media, 28)
@@ -41,7 +40,9 @@ useParallax(media, 28)
             </li>
           </ul>
 
-          <BaseButton :to="corporateLink" size="lg" class="mt-4">
+          <BaseButton
+to="#booking"
+            size="lg" class="mt-4" @click="event = 'corporate'">
             Обсудить корпоративное мероприятие
             <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
           </BaseButton>

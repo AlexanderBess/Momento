@@ -9,9 +9,13 @@ import type { PreviewView } from '~/types/photobook'
 /**
  * MOMENTO Book Studio: settings on the left, the live preview on the right (sticky).
  * On phones the preview comes first and stays pinned under the header, settings scroll below it,
- * and the price + «Оформить заказ» live in a bottom bar.
+ * and the price + order actions live in a bottom bar.
+ *
+ * The open book is a Book Studio project: autosaved on this device and version-checked
+ * (useBookStudioSession). It joins «Моя подборка» only via «Добавить в заказ» / «Оформить заказ».
  */
 const { config, cover, preset, activeSpread, focusView } = usePhotobookStudio()
+useBookStudioSession()
 
 /* ---------- Groups ---------- */
 
@@ -81,7 +85,9 @@ const showBar = computed(() => studioInView.value && !panelInView.value)
         </p>
       </div>
 
-      <div class="mt-10 grid gap-6 lg:mt-14 lg:grid-cols-[minmax(0,22.5rem)_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] xl:gap-14">
+      <PhotobookProjectBar class="mt-8 lg:mt-10" />
+
+      <div class="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-[minmax(0,22.5rem)_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] xl:gap-14">
         <!-- ---------- Preview (first on phones, right column on desktop) ---------- -->
         <div class="preview-pin lg:order-2">
           <div class="lg:sticky lg:top-[calc(var(--header-height)+1.25rem)]">
@@ -131,7 +137,7 @@ const showBar = computed(() => studioInView.value && !panelInView.value)
     </Transition>
 
     <PhotobookImagePicker />
-    <PhotobookOrderModal />
+    <PhotobookConflictDialog />
   </section>
 </template>
 

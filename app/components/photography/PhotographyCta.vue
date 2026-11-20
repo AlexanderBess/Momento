@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ArrowRight } from '@lucide/vue'
 
-// Uses the page's current choice (package / add-ons / other services), so nothing selected in Pricing is lost.
-const { orderLink } = usePhotographyOrder()
+// Leads to the packages: the request is sent from there with the chosen package and add-ons.
 </script>
 
 <template>
@@ -17,7 +16,7 @@ const { orderLink } = usePhotographyOrder()
           <p class="text-lead text-bg/72">
             Расскажите нам о своём событии или идее съёмки. Вместе подберём подходящий формат.
           </p>
-          <BaseButton :to="orderLink" size="lg" class="w-full sm:w-auto">
+          <BaseButton to="#pricing" size="lg" class="w-full sm:w-auto">
             Обсудить съёмку
             <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
           </BaseButton>

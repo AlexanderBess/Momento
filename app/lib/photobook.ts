@@ -1,8 +1,8 @@
-import { coverTypes, findCoverType } from '~/config/photobook/covers'
-import { findFormat, pageCountsFor, spreadCountFor } from '~/config/photobook/formats'
+import { coverTypes, findCoverColor, findCoverType, findTitleColor, titlePositions } from '~/config/photobook/covers'
+import { findFormat, pageCountsFor, plural, spreadCountFor } from '~/config/photobook/formats'
 import { findLayout } from '~/config/photobook/layouts'
 import { findImage, photoLibraries } from '~/config/photobook/library'
-import { endpaperColors } from '~/config/photobook/materials'
+import { endpaperColors, extraOptions, findEndpaper, findPaperType } from '~/config/photobook/materials'
 import { findPreset } from '~/config/photobook/presets'
 import type {
   LayoutId,
@@ -257,3 +257,47 @@ export function serializeConfig(config: PhotobookConfig) {
 }
 
 export type SerializedPhotobook = ReturnType<typeof serializeConfig>
+
+/** Human-readable rows of a configuration — the book's summary in the selection and in the request. */
+export function describePhotobook(c: PhotobookConfig): { label: string; value: string }[] {
+  const format = findFormat(c.format)
+  const cover = findCoverType(c.coverType)
+  const extras = effectiveExtras(c)
+  const spine = c.spineColor === 'match' ? 'в цвет обложки' : findCoverColor(c.coverType, c.spineColor).label.toLowerCase()
+  const rows: { label: string; value: string }[] = [
+    { label: 'Коллекция', value: findPreset(c.selectedCollection).name },
+    { label: 'Формат', value: `${format.label}, ${format.widthCm} × ${format.heightCm} см` },
+    {
+      label: 'Страницы',
+      value: `${c.pageCount} ${plural(c.pageCount, ['страница', 'страницы', 'страниц'])} · ${c.spreads.length} ${plural(c.spreads.length, ['разворот', 'разворота', 'разворотов'])}`,
+    },
+    { label: 'Обложка', value: cover.label },
+    { label: cover.usesPhoto ? 'Цвет корешка' : 'Цвет обложки', value: findCoverColor(c.coverType, c.coverColor).label },
+    {
+      label: 'Название',
+      value:
+        c.coverTitleEnabled && c.coverTitle.trim()
+          ? `«${c.coverTitle.trim()}» · ${findTitleColor(c.coverType, c.coverTitleColor).label.toLowerCase()} · ${titlePositions.find((p) => p.id === c.coverTitlePosition)?.label.toLowerCase()}`
+          : 'без названия',
+    },
+    { label: 'Бумага', value: findPaperType(c.paperType).label },
+    { label: 'Форзац', value: findEndpaper(c.endpaperColor).label },
+  ]
+  if (cover.supportsSpineColor) rows.push({ label: 'Корешок', value: spine })
+  const chosenExtras = extraOptions.filter((e) => extras[e.id]).map((e) => e.label.toLowerCase())
+  rows.push({ label: 'Дополнительно', value: chosenExtras.length ? chosenExtras.join(', ') : 'нет' })
+  rows.push({ label: 'Экземпляров', value: String(c.quantity) })
+  return rows
+}
+
+/* ---------- Project content (what is saved and compared) ---------- */
+
+/** View state of the studio (which page is shown) — saved with the project but never a «change». */
+export const VIEW_FIELDS = ['activeView', 'activeSpreadId'] as const
+
+export type PhotobookContent = Omit<PhotobookConfig, (typeof VIEW_FIELDS)[number]>
+
+export function contentOf(config: PhotobookConfig): PhotobookContent {
+  const { activeView: _v, activeSpreadId: _s, ...content } = config
+  return content
+}

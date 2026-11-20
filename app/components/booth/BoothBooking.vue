@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { ArrowRight } from '@lucide/vue'
-import { buildOrderLink, eventTypeLabels, eventTypes } from '~/config/order'
+import { ArrowRight, Check, Plus } from '@lucide/vue'
+import { boothCustomization } from '~/config/booth'
+import { eventTypeLabels, eventTypes } from '~/config/order'
 
-const selected = useBoothEvent()
-const orderLink = computed(() => buildOrderLink({ service: 'booth', event: selected.value ?? undefined }))
+/*
+ * Request block: optional event type and design wishes form the booth position of «Моя подборка».
+ *   «Отправить заявку» — sync the position and open the request form;
+ *   «Добавить к общей заявке» — add it and stay on the page.
+ */
+const { event: selected, design, toggleDesign, inSelection, addToSelection, submit } = useBoothOrder()
+const { openDrawer } = useSelection()
 </script>
 
 <template>
@@ -20,7 +26,7 @@ const orderLink = computed(() => buildOrderLink({ service: 'booth', event: selec
           Расскажите о вашем мероприятии, а мы поможем подобрать подходящий формат.
         </p>
 
-        <!-- Optional event type: native radios (arrow-key navigation for free), passed to /order as ?event= -->
+        <!-- Optional event type: native radios (arrow-key navigation for free). -->
         <fieldset class="mt-9 flex max-w-2xl flex-col items-center gap-3">
           <legend class="mb-3 text-sm font-semibold">Тип мероприятия <span class="font-normal text-muted">— необязательно</span></legend>
           <div class="flex flex-wrap justify-center gap-2">
@@ -44,10 +50,37 @@ const orderLink = computed(() => buildOrderLink({ service: 'booth', event: selec
           </button>
         </fieldset>
 
-        <BaseButton :to="orderLink" size="lg" class="mt-8">
-          Оставить заявку
-          <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
-        </BaseButton>
+        <fieldset class="mt-6 flex max-w-2xl flex-col items-center gap-3">
+          <legend class="mb-3 text-sm font-semibold">Оформление <span class="font-normal text-muted">— пожелания, необязательно</span></legend>
+          <div class="flex flex-wrap justify-center gap-2">
+            <label v-for="option in boothCustomization" :key="option.id" class="chip min-h-11!" :class="design.includes(option.id) && 'is-selected'">
+              <input type="checkbox" class="sr-only" :checked="design.includes(option.id)" @change="toggleDesign(option.id)">
+              <Check v-if="design.includes(option.id)" class="size-3.5" :stroke-width="2.5" aria-hidden="true" />
+              <Plus v-else class="size-3.5" :stroke-width="2" aria-hidden="true" />
+              {{ option.label }}
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="mt-8 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
+          <BaseButton size="lg" class="w-full sm:w-auto" @click="submit">
+            Отправить заявку
+            <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
+          </BaseButton>
+          <BaseButton size="lg" variant="secondary" class="w-full sm:w-auto" @click="addToSelection">
+            <Plus class="size-4" :stroke-width="2" aria-hidden="true" />
+            Добавить к общей заявке
+          </BaseButton>
+        </div>
+        <button
+          v-if="inSelection"
+          type="button"
+          class="mt-2 min-h-11 px-3 text-sm font-semibold underline-offset-4 hover:underline"
+          @click="openDrawer"
+        >
+          Фотобудка уже в подборке — открыть
+        </button>
+        <p class="mt-3 max-w-md text-xs text-muted">Заявка не бронирует дату — мы свяжемся, рассчитаем стоимость и всё согласуем.</p>
       </div>
     </div>
   </section>

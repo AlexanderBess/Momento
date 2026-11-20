@@ -2,15 +2,16 @@
  * Site-wide notifications (rendered once by ToastHost in layouts/default.vue).
  *
  *   const toast = useToast()
- *   toast.show({ title: 'Фотозоны добавлены в заявку', action: { label: 'Перейти в корзину', to: '/checkout' } })
+ *   toast.show({ title: 'Добавлено в подборку', action: { label: 'Открыть подборку', run: openDrawer } })
  *
- * A toast never navigates by itself; the optional action is a link the visitor may follow.
+ * A toast never navigates by itself; the optional action is a link (`to`) or a button (`run`)
+ * the visitor may use.
  */
 export interface Toast {
   id: number
   title: string
   description?: string
-  action?: { label: string; to: string }
+  action?: { label: string; to?: string; run?: () => void }
   tone?: 'success' | 'info'
 }
 

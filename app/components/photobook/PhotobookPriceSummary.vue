@@ -1,24 +1,46 @@
 <script setup lang="ts">
-import { ArrowRight, Minus, Plus } from '@lucide/vue'
+import { ArrowRight, Check, Minus, Plus } from '@lucide/vue'
 import { photobookPricing } from '~/config/photobook/pricing'
 
 /**
- * Price + quantity + the main action. `panel` — full block with the breakdown (studio sidebar),
+ * Price + quantity + the order actions. `panel` — full block with the breakdown (studio sidebar),
  * `bar` — one line for the sticky mobile bar.
+ *
+ *   «Добавить в заказ» — puts this book into «Моя подборка» and stays in the studio;
+ *   «Оформить заказ»   — adds / syncs this book and opens the request form.
+ * Saving the project alone never adds the book. Once added, the position follows every save.
  */
 withDefaults(defineProps<{ variant?: 'panel' | 'bar' }>(), { variant: 'panel' })
 
-const { config, setQuantity, orderOpen } = usePhotobookStudio()
+const { config, setQuantity } = usePhotobookStudio()
+const project = usePhotobookProject()
+const { notify, goToCheckout, openDrawer } = useSelection()
 const price = usePhotobookPrice()
 const uid = useId()
+
+const bookLabel = computed(() =>
+  config.value.coverTitleEnabled && config.value.coverTitle.trim() ? `Фотокнига «${config.value.coverTitle.trim()}»` : 'Фотокнига',
+)
+
+function add() {
+  const result = project.addToSelection()
+  if (result === 'conflict' || result === 'needs-replace') return
+  notify(result, bookLabel.value)
+}
+
+async function checkout() {
+  const result = project.addToSelection()
+  if (result === 'conflict') return
+  await goToCheckout()
+}
 </script>
 
 <template>
   <!-- ---------- Sticky bar (mobile) ---------- -->
-  <div v-if="variant === 'bar'" class="flex items-center gap-4">
+  <div v-if="variant === 'bar'" class="flex items-center gap-3">
     <p class="flex min-w-0 flex-1 flex-col">
       <template v-if="price.mode === 'estimate'">
-        <span class="text-[0.6875rem] font-semibold tracking-[0.08em] text-muted uppercase">
+        <span class="truncate text-[0.6875rem] font-semibold tracking-[0.08em] text-muted uppercase">
           {{ price.isDemo ? 'Примерно · демо' : 'Примерно' }}{{ price.quantity > 1 ? ` · ${price.quantity} шт.` : '' }}
         </span>
         <span class="text-lg font-semibold tabular-nums">{{ formatRub(price.total) }}</span>
@@ -28,7 +50,16 @@ const uid = useId()
         <span class="text-sm font-semibold">обсуждается</span>
       </template>
     </p>
-    <BaseButton @click="orderOpen = true">Оформить заказ</BaseButton>
+    <button
+      type="button"
+      class="stepper-button"
+      :class="project.inSelection.value && 'border-success! text-success'"
+      :aria-label="project.inSelection.value ? 'Книга в подборке — обновить' : 'Добавить в заказ'"
+      @click="add"
+    >
+      <component :is="project.inSelection.value ? Check : Plus" class="size-5" :stroke-width="2" aria-hidden="true" />
+    </button>
+    <BaseButton @click="checkout">Оформить заказ</BaseButton>
   </div>
 
   <!-- ---------- Panel ---------- -->
@@ -101,9 +132,36 @@ const uid = useId()
       </template>
     </div>
 
-    <BaseButton size="lg" block @click="orderOpen = true">
-      Оформить заказ
-      <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
-    </BaseButton>
+    <label class="flex cursor-pointer items-start gap-3 text-sm">
+      <input
+        type="checkbox"
+        class="mt-0.5 size-5 shrink-0 accent-(--color-accent)"
+        :checked="project.layoutComplete.value"
+        @change="project.setLayoutComplete(($event.target as HTMLInputElement).checked)"
+      >
+      <span>
+        <span class="font-semibold">Макет готов к согласованию</span>
+        <span class="mt-0.5 block text-xs text-muted">Можно оформить и незавершённый макет — доработаем его вместе.</span>
+      </span>
+    </label>
+
+    <div class="flex flex-col gap-2">
+      <BaseButton size="lg" block @click="checkout">
+        Оформить заказ
+        <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
+      </BaseButton>
+      <BaseButton size="lg" variant="secondary" block @click="add">
+        <component :is="project.inSelection.value ? Check : Plus" class="size-4" :stroke-width="2" aria-hidden="true" />
+        {{ project.inSelection.value ? 'Книга в заказе' : 'Добавить в заказ' }}
+      </BaseButton>
+      <button
+        v-if="project.inSelection.value"
+        type="button"
+        class="min-h-11 text-sm font-semibold underline-offset-4 hover:underline"
+        @click="openDrawer"
+      >
+        Открыть подборку
+      </button>
+    </div>
   </div>
 </template>

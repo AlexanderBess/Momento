@@ -1,27 +1,27 @@
 <script setup lang="ts">
 import { ArrowRight, Check, Plus } from '@lucide/vue'
 import { formatRub } from '~/composables/usePhotobookPrice'
-import { buildOrderLink } from '~/config/order'
-import {
-  photographyBundleServices,
-  photographyExtras,
-  photographyPackages,
-  type PhotographyPackage,
-} from '~/config/photography'
-import { findService } from '~/config/services'
+import { photographyExtras, photographyPackages, type PhotographyPackage } from '~/config/photography'
+import { photographyDirections } from '~/lib/selection'
 
 /*
- * Pricing: packages are the main offer; add-ons, other services and the individual request are
- * deliberately quieter. Choices only shape the link into the shared order flow
- * (usePhotographyOrder → /order?…) — no cart or booking of its own. Values that are `null` in config
- * are never shown as numbers.
+ * Pricing: packages are the main offer; add-ons and the individual request are deliberately
+ * quieter. The choice becomes the photography position of «Моя подборка»:
+ *   «Отправить заявку» — sync it and open the request form;
+ *   «Добавить к общей заявке» — add it and stay on the page.
+ * Values that are `null` in config are never shown as numbers.
  */
 
-const { selection, orderLink, hasSelection, selectPackage, toggleExtra, toggleBundle, reset } = usePhotographyOrder()
+const { selection, hasSelection, inSelection, selectPackage, toggleExtra, addToSelection, submit, reset } = usePhotographyOrder()
+const { openDrawer } = useSelection()
 
 const extras = photographyExtras.filter((extra) => extra.available)
-const bundle = photographyBundleServices.map((slug) => findService(slug)).filter((s) => s !== undefined)
-const customLink = buildOrderLink({ service: 'photography', extras: ['custom-terms'] })
+
+/** «Обсудить индивидуальную съёмку»: marks the individual-terms add-on and goes to the summary. */
+function chooseCustom() {
+  if (!selection.value.extras.includes('custom-terms')) toggleExtra('custom-terms')
+  document.getElementById('pricing-summary')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
 
 const priceLabel = (price: number | null) => (price === null ? 'По запросу' : formatRub(price))
 
@@ -41,10 +41,11 @@ function packageLines(pkg: PhotographyPackage): string[] {
 
 const summary = computed(() => {
   const pkg = photographyPackages.find((p) => p.id === selection.value.package)
+  const direction = photographyDirections.find((d) => d.id === selection.value.direction)
   return [
+    direction && direction.label,
     pkg && `${pkg.name} — ${pkg.title}`,
     ...extras.filter((e) => selection.value.extras.includes(e.id)).map((e) => e.title),
-    ...bundle.filter((s) => selection.value.bundle.includes(s.slug)).map((s) => s.title),
   ].filter((line): line is string => Boolean(line))
 })
 </script>
@@ -147,31 +148,16 @@ const summary = computed(() => {
             </ul>
           </fieldset>
 
-          <fieldset v-reveal>
-            <legend class="eyebrow text-text">Объединить в одном заказе</legend>
-            <div class="mt-4 flex flex-wrap gap-2">
-              <label
-                v-for="service in bundle"
-                :key="service.slug"
-                class="chip"
-                :class="selection.bundle.includes(service.slug) && 'is-selected'"
-              >
-                <input
-                  type="checkbox"
-                  class="sr-only"
-                  :checked="selection.bundle.includes(service.slug)"
-                  @change="toggleBundle(service.slug)"
-                >
-                <Check v-if="selection.bundle.includes(service.slug)" class="size-3.5" :stroke-width="2.5" aria-hidden="true" />
-                <Plus v-else class="size-3.5" :stroke-width="2" aria-hidden="true" />
-                {{ service.title }}
-              </label>
-            </div>
-            <p class="mt-3 text-sm text-muted">Одна заявка и одно согласование для всех услуг на вашем событии.</p>
-          </fieldset>
+          <div v-reveal>
+            <p class="eyebrow text-text">Объединить в одной заявке</p>
+            <p class="mt-3 text-sm text-muted">
+              Фотобудку, фотозоны и фотокниги можно добавить в ту же подборку на их страницах — одна заявка и одно
+              согласование для всех услуг на вашем событии.
+            </p>
+          </div>
         </div>
 
-        <aside v-reveal="120" class="lg:col-span-4 lg:col-start-9" aria-labelledby="pricing-summary-title">
+        <aside id="pricing-summary" v-reveal="120" class="lg:col-span-4 lg:col-start-9" aria-labelledby="pricing-summary-title">
           <div class="rounded-input bg-bg p-6 sm:p-7">
             <h3 id="pricing-summary-title" class="eyebrow text-text">Ваш выбор</h3>
             <ul v-if="summary.length" class="mt-4 flex flex-col gap-2 text-[0.9375rem]" aria-live="polite">
@@ -182,10 +168,22 @@ const summary = computed(() => {
             </ul>
             <p v-else class="mt-4 text-[0.9375rem] text-muted" aria-live="polite">Выберите пакет и дополнительные услуги.</p>
 
-            <BaseButton :to="orderLink" size="lg" block class="mt-6">
-              {{ hasSelection ? 'Перейти к заявке' : 'Обсудить съёмку' }}
+            <BaseButton size="lg" block class="mt-6" @click="submit">
+              Отправить заявку
               <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
             </BaseButton>
+            <BaseButton variant="secondary" size="lg" block class="mt-2" @click="addToSelection">
+              <Plus class="size-4" :stroke-width="2" aria-hidden="true" />
+              Добавить к общей заявке
+            </BaseButton>
+            <button
+              v-if="inSelection"
+              type="button"
+              class="mt-1 min-h-11 w-full text-sm font-semibold underline-offset-4 hover:underline"
+              @click="openDrawer"
+            >
+              Фотосъёмка в подборке — открыть
+            </button>
             <button
               v-if="hasSelection"
               type="button"
@@ -212,7 +210,7 @@ const summary = computed(() => {
             Расскажите о своей идее — мы подготовим индивидуальное предложение.
           </p>
         </div>
-        <BaseButton :to="customLink" variant="secondary" size="lg" class="w-full md:w-auto">
+        <BaseButton variant="secondary" size="lg" class="w-full md:w-auto" @click="chooseCustom">
           Обсудить индивидуальную съёмку
           <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
         </BaseButton>

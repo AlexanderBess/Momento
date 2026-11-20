@@ -2,14 +2,12 @@
 import { ArrowDown, ArrowRight, Palette, Sparkles, UsersRound } from '@lucide/vue'
 import type { Component } from 'vue'
 import { boothHeroBenefits, boothHeroPortraits, type HeroPortraitRole } from '~/config/booth'
-import { buildOrderLink } from '~/config/order'
 
 /*
  * AI Editorial hero: a dark "stage" with an art-directed collage of AI portraits.
  * Deliberately unlike the home hero (light background, single photo, decorative ring).
  */
 
-const orderLink = buildOrderLink({ service: 'booth' })
 
 /* ---------- Collage layout (positional, by role) ---------- */
 
@@ -146,7 +144,7 @@ onBeforeUnmount(() => {
           <div
             class="mt-1 flex w-full flex-col gap-3 motion-safe:animate-hero-enter motion-safe:[animation-delay:220ms] sm:w-auto sm:flex-row"
           >
-            <BaseButton :to="orderLink" size="lg" block class="sm:w-auto">
+            <BaseButton to="#booking" size="lg" block class="sm:w-auto">
               Заказать фотобудку
               <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
             </BaseButton>

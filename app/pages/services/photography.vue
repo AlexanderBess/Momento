@@ -22,8 +22,11 @@ useSeoMeta({
 
 useHead({ link: [{ rel: 'canonical', href: canonical }] })
 
-// Package / add-on choices live only while the visitor is on this page.
-const { reset } = usePhotographyOrder()
+// Choices live only while the visitor is on this page; they start from the position already in
+// «Моя подборка», so sending the request again never asks to replace it with an empty one.
+const { reset, syncFromSelection } = usePhotographyOrder()
+const { ready } = useCart()
+onMounted(() => watch(ready, (value) => value && syncFromSelection(), { immediate: true }))
 onBeforeUnmount(reset)
 </script>
 
