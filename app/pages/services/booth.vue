@@ -22,11 +22,12 @@ useSeoMeta({
 
 useHead({ link: [{ rel: 'canonical', href: canonical }] })
 
-// The selected event type lives only while the visitor is on this page.
-const selectedEvent = useBoothEvent()
-onBeforeUnmount(() => {
-  selectedEvent.value = null
-})
+// The booth choice lives only while the visitor is on this page; it starts from the position
+// already in «Моя подборка».
+const { reset, syncFromSelection } = useBoothOrder()
+const { ready } = useCart()
+onMounted(() => watch(ready, (value) => value && syncFromSelection(), { immediate: true }))
+onBeforeUnmount(reset)
 </script>
 
 <template>

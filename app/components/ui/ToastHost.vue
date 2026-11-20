@@ -36,13 +36,21 @@ const { toasts, dismiss, pause, resume } = useToast()
           <p class="text-sm font-semibold">{{ toast.title }}</p>
           <p v-if="toast.description" class="mt-0.5 text-[0.8125rem] leading-snug text-bg/70">{{ toast.description }}</p>
           <NuxtLink
-            v-if="toast.action"
+            v-if="toast.action?.to"
             :to="toast.action.to"
             class="mt-2 inline-flex min-h-8 items-center text-[0.8125rem] font-semibold underline underline-offset-4 hover:text-bg/80"
             @click="dismiss(toast.id)"
           >
             {{ toast.action.label }}
           </NuxtLink>
+          <button
+            v-else-if="toast.action?.run"
+            type="button"
+            class="mt-2 inline-flex min-h-8 items-center text-[0.8125rem] font-semibold underline underline-offset-4 hover:text-bg/80"
+            @click="dismiss(toast.id); toast.action.run()"
+          >
+            {{ toast.action.label }}
+          </button>
         </div>
         <button
           type="button"

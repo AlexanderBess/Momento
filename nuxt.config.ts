@@ -17,12 +17,19 @@ export default defineNuxtConfig({
     viewTransition: true,
   },
 
+  // Server-only secrets: requests go site → /api/leads → Telegram Bot API → MOMENTO work chat.
+  // Empty → /api/leads answers `not-configured` and the form says so instead of faking success.
+  // Set via NUXT_TELEGRAM_BOT_TOKEN / NUXT_TELEGRAM_CHAT_ID (see .env.example). Never `public`.
   runtimeConfig: {
-    public: {
-      // Where order requests are POSTed (CRM webhook / form service). Empty → forms say that online
-      // sending is not connected yet instead of faking success. Set via NUXT_PUBLIC_LEADS_ENDPOINT.
-      leadsEndpoint: '',
-    },
+    telegramBotToken: '',
+    telegramChatId: '',
+    // Overridable only for local testing against a stub (NUXT_TELEGRAM_API_BASE).
+    telegramApiBase: 'https://api.telegram.org',
+  },
+
+  routeRules: {
+    // The old order stub: every request is now formed from «Моя подборка» at /checkout.
+    '/order': { redirect: { to: '/checkout', statusCode: 301 } },
   },
 
   // Components are named by file name only (BaseButton, AppHeader),

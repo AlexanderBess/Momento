@@ -29,5 +29,12 @@ const route = useRoute()
 
     <ToastHost />
     <PageLoader />
+
+    <!-- «Моя подборка»: drawer, position editor above it, confirmations above both (top-layer order). -->
+    <ClientOnly>
+      <SelectionDrawer />
+      <ItemEditor />
+      <ConfirmHost />
+    </ClientOnly>
   </div>
 </template>

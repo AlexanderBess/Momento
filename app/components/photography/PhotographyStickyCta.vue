@@ -6,7 +6,6 @@ import { ArrowRight } from '@lucide/vue'
  * Appears once the hero has left the viewport; hides again while the pricing block (it has its own
  * order button) is on screen and from the final CTA onwards, so it never covers the footer.
  */
-const { orderLink } = usePhotographyOrder()
 
 const heroVisible = ref(true)
 const pricingVisible = ref(false)
@@ -42,7 +41,7 @@ const visible = computed(() => !heroVisible.value && !pricingVisible.value && !c
       class="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-end px-(--gutter) pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden"
     >
       <NuxtLink
-        :to="orderLink"
+        to="#pricing"
         class="pointer-events-auto inline-flex h-12 items-center gap-2 rounded-full bg-text pr-4 pl-5 text-sm font-semibold text-bg shadow-[0_12px_32px_-12px_rgb(41_39_36/0.55)] transition-[scale] duration-(--motion-normal) active:scale-[0.97]"
       >
         Обсудить съёмку

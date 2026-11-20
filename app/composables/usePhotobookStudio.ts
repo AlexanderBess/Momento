@@ -17,7 +17,6 @@ export type PickerTarget = { kind: 'slot'; spreadId: string; slot: number } | { 
 export function usePhotobookStudio() {
   const config = useState<PhotobookConfig>('photobook-config', () => createConfig(DEFAULT_PRESET))
   const pickerTarget = useState<PickerTarget | null>('photobook-picker', () => null)
-  const orderOpen = useState('photobook-order-open', () => false)
   /** Pose of the closed book in the preview: spine settings turn the book to show the spine. */
   const coverPose = useState<'three-quarter' | 'spine'>('photobook-cover-pose', () => 'three-quarter')
 
@@ -109,8 +108,12 @@ export function usePhotobookStudio() {
     pageSequence,
     sequenceIndex,
     pickerTarget,
-    orderOpen,
     coverPose,
+    /** Replaces the whole book (opening another project, loading a newer version). */
+    replaceConfig: (next: PhotobookConfig) => {
+      config.value = normalize(next)
+      pickerTarget.value = null
+    },
     update,
     focusView,
     applyPreset,

@@ -1,27 +1,21 @@
 <script setup lang="ts">
-import { Check, ShoppingBag } from '@lucide/vue'
+import { ArrowRight, Check, Plus } from '@lucide/vue'
 import {
   findConcept,
   photozoneCategoryNames,
   photozoneOptions,
   photozonePricing,
 } from '~/config/photozones'
+import { photozonePrice } from '~/lib/selection'
 
 /*
  * Details of a ready concept in the shared BaseDialog (bottom sheet on phones): gallery, description,
- * size, composition, suitable events, base price, add-on options and «Добавить в заявку».
- * Options are remembered per concept; when the concept is already in the cart the button updates it.
- *
- * mode="edit" — opened from the cart («Изменить»): starts from the saved options, saves changes into
- * the same position, and forgets unsaved changes when closed.
+ * size, composition, suitable events, base price and add-on options.
+ * Footer: «Отправить заявку» (sync this concept, then open the request form) and «Добавить к общей
+ * заявке» (add / update and stay). Options are remembered per concept while on the page.
+ * Positions already in the selection are edited in «Моя подборка» (ItemEditor).
  */
-const props = withDefaults(defineProps<{ mode?: 'catalog' | 'edit' }>(), { mode: 'catalog' })
-
-const { openConceptId, optionsOf, toggleOption, addReady, isInCart, isUpToDate, discardDraft } = usePhotozoneOrder()
-
-watch(openConceptId, (now, prev) => {
-  if (props.mode === 'edit' && prev && prev !== now) discardDraft(prev)
-})
+const { openConceptId, optionsOf, toggleOption, addReady, submitReady, isInCart, isUpToDate } = usePhotozoneOrder()
 
 const concept = computed(() => (openConceptId.value ? findConcept(openConceptId.value) : undefined))
 const open = computed({
@@ -49,18 +43,23 @@ const state = computed(() => {
   return isUpToDate(concept.value.id) ? 'in-cart' : 'changed'
 })
 
-const buttonLabel = computed(() => {
-  if (props.mode === 'edit') return state.value === 'changed' ? 'Сохранить изменения' : 'Закрыть'
-  return state.value === 'new' ? 'Добавить в заявку' : state.value === 'changed' ? 'Обновить в заявке' : 'Уже в заявке'
-})
+const addLabel = computed(() =>
+  state.value === 'new' ? 'Добавить к общей заявке' : state.value === 'changed' ? 'Обновить в подборке' : 'Уже в подборке',
+)
+
+// The dialog closes in the same tick, so the toast / confirmation is never hidden behind it.
+function add() {
+  const id = concept.value?.id
+  if (!id) return
+  openConceptId.value = null
+  addReady(id)
+}
 
 function submit() {
   const id = concept.value?.id
   if (!id) return
-  // Nothing to save in the editor → just close, no «без изменений» toast.
-  if (props.mode !== 'edit' || state.value === 'changed') addReady(id)
-  // Closed in the same tick, so the toast is never hidden behind the dialog's top layer.
   openConceptId.value = null
+  submitReady(id)
 }
 </script>
 
@@ -88,9 +87,6 @@ function submit() {
 
       <!-- ---------- Info ---------- -->
       <div class="flex flex-col">
-        <p v-if="mode === 'edit'" class="mb-4 rounded-input bg-service-bg px-4 py-2.5 text-sm">
-          Редактирование позиции заявки — измените опции и сохраните.
-        </p>
         <div class="flex flex-wrap items-center gap-3">
           <p class="eyebrow text-(--color-accent)">{{ photozoneCategoryNames[concept.category] }}</p>
           <span class="h-px w-8 bg-service-accent/40" aria-hidden="true" />
@@ -154,7 +150,7 @@ function submit() {
     </div>
 
     <template v-if="concept" #footer>
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <p class="flex flex-col" aria-live="polite">
           <span class="text-xs text-muted">Базовая аренда {{ options.length ? '+ опции' : '' }}</span>
           <span class="text-xl font-semibold tabular-nums">
@@ -167,11 +163,16 @@ function submit() {
             Демо-цена · без учёта доставки
           </span>
         </p>
-        <BaseButton size="lg" class="w-full sm:w-auto" :variant="state === 'in-cart' ? 'secondary' : 'primary'" @click="submit">
-          <ShoppingBag v-if="mode === 'catalog'" class="size-4" :stroke-width="2" aria-hidden="true" />
-          <Check v-else-if="state === 'changed'" class="size-4" :stroke-width="2" aria-hidden="true" />
-          {{ buttonLabel }}
-        </BaseButton>
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <BaseButton variant="secondary" class="w-full sm:w-auto" @click="add">
+            <component :is="state === 'in-cart' ? Check : Plus" class="size-4" :stroke-width="2" aria-hidden="true" />
+            {{ addLabel }}
+          </BaseButton>
+          <BaseButton class="w-full sm:w-auto" @click="submit">
+            Отправить заявку
+            <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
+          </BaseButton>
+        </div>
       </div>
     </template>
   </BaseDialog>

@@ -1,89 +1,30 @@
-import type { CartAddResult, CartItem } from '~/types/cart'
+import type { CartItemInput } from '~/types/cart'
+import { findConcept, findOption, type PhotozoneOptionId } from '~/config/photozones'
 import {
-  findConcept,
-  findOption,
-  photozoneOptions,
-  photozonePricing,
-  type PhotozoneConcept,
-  type PhotozoneOptionId,
-} from '~/config/photozones'
-import { cartLink } from '~/config/navigation'
+  PHOTOZONE_CUSTOM_KEY,
+  photozoneCustomItem,
+  photozoneReadyItem,
+  photozoneReadyKey,
+  readPhotozoneConfig,
+} from '~/lib/selection'
 
 /**
- * Photo zones page state and its bridge to the shared cart (useCart).
+ * Photo zones page state and its bridge to «Моя подборка».
  *
- * Cart positions:
+ * Positions (several per selection, see lib/selection.ts):
  * - ready concept → key `photozones:ready:<conceptId>`. One position per concept: adding the same
  *   concept again with other options updates that position (it is the same photo zone being
  *   re-configured), adding it unchanged does nothing. Different concepts are separate positions.
  * - individual project → key `photozones:custom`, price `null` («Обсуждается»).
- *
- * `config` of a position: { orderType: 'ready' | 'custom', conceptId, options } — sent with the request.
  */
 
 export type PhotozoneSelection =
   | { type: 'ready'; conceptId: string; options: PhotozoneOptionId[] }
   | { type: 'custom' }
 
-const PAGE = '/services/photozones'
-const SERVICE_TITLE = 'Фотозоны'
-
-export const readyKey = (conceptId: string) => `photozones:ready:${conceptId}`
-export const CUSTOM_KEY = 'photozones:custom'
-
-/** Price of a concept with options: known sum + whether some part is «обсуждается». */
-export function photozonePrice(concept: PhotozoneConcept, options: PhotozoneOptionId[]) {
-  const chosen = photozoneOptions.filter((o) => options.includes(o.id))
-  const partial = chosen.some((o) => o.price === null)
-  const total =
-    concept.basePrice === null ? null : concept.basePrice + chosen.reduce((sum, o) => sum + (o.price ?? 0), 0)
-  return { total, partial, isDemo: photozonePricing.isDemo }
-}
-
-function readyItem(concept: PhotozoneConcept, options: PhotozoneOptionId[]): Omit<CartItem, 'updatedAt'> {
-  // Options in catalogue order, so the same choice always serialises the same way.
-  const ordered = photozoneOptions.filter((o) => options.includes(o.id)).map((o) => o.id)
-  const price = photozonePrice(concept, ordered)
-  return {
-    key: readyKey(concept.id),
-    service: 'photozones',
-    title: `${SERVICE_TITLE} — «${concept.title}»`,
-    subtitle: 'Готовая фотозона · аренда с доставкой, монтажом и демонтажом',
-    details: ordered.length ? ordered.map((id) => findOption(id)!.label) : ['Без дополнительных опций'],
-    price: price.total,
-    pricePartial: price.partial,
-    priceIsDemo: price.total !== null && price.isDemo,
-    quantity: 1,
-    config: { orderType: 'ready', conceptId: concept.id, options: ordered },
-    href: `${PAGE}#collection`,
-  }
-}
-
-function customItem(): Omit<CartItem, 'updatedAt'> {
-  return {
-    key: CUSTOM_KEY,
-    service: 'photozones',
-    title: `${SERVICE_TITLE} — индивидуальный проект`,
-    subtitle: 'Оформление под ваше мероприятие · доставка, монтаж и демонтаж',
-    details: ['Концепцию и комплектацию согласуем вместе'],
-    price: null,
-    quantity: 1,
-    config: { orderType: 'custom', conceptId: null, options: [] },
-    href: `${PAGE}#custom`,
-  }
-}
-
-/** Concept id of a cart position that can be edited in the photo zone dialog; `null` otherwise. */
-export function editablePhotozoneConcept(item: CartItem): string | null {
-  if (item.service !== 'photozones' || item.config.orderType !== 'ready') return null
-  const id = item.config.conceptId
-  return typeof id === 'string' && findConcept(id) ? id : null
-}
-
 export function usePhotozoneOrder() {
   const cart = useCart()
-  const toast = useToast()
-  const route = useRoute()
+  const selectionUi = useSelection()
 
   /** Last explicit choice on the page — used by the final CTA. */
   const selection = useState<PhotozoneSelection | null>('photozone-selection', () => null)
@@ -92,30 +33,18 @@ export function usePhotozoneOrder() {
   /** Concept shown in the details dialog. */
   const openConceptId = useState<string | null>('photozone-open', () => null)
 
-  /** Options of a concept: what is in the cart, else the current draft. */
+  /** Options of a concept: the current draft, else what is in the selection. */
   function optionsOf(conceptId: string): PhotozoneOptionId[] {
     if (drafts.value[conceptId]) return drafts.value[conceptId]
-    const inCart = cart.find(readyKey(conceptId))?.config.options
-    return Array.isArray(inCart) ? (inCart as PhotozoneOptionId[]) : []
+    const item = cart.find(photozoneReadyKey(conceptId))
+    const config = item ? readPhotozoneConfig(item.config) : null
+    return config?.orderType === 'ready' ? config.options : []
   }
 
   function openConcept(conceptId: string) {
     drafts.value = { ...drafts.value, [conceptId]: optionsOf(conceptId) }
     openConceptId.value = conceptId
     selection.value = { type: 'ready', conceptId, options: drafts.value[conceptId]! }
-  }
-
-  /** Opens the dialog to edit a position that is already in the cart (always starts from its saved options). */
-  function editConcept(conceptId: string) {
-    const saved = cart.find(readyKey(conceptId))?.config.options
-    drafts.value = { ...drafts.value, [conceptId]: Array.isArray(saved) ? (saved as PhotozoneOptionId[]) : [] }
-    openConceptId.value = conceptId
-  }
-
-  /** Forgets unsaved option changes of a concept (closing the editor without saving). */
-  function discardDraft(conceptId: string) {
-    const { [conceptId]: _, ...rest } = drafts.value
-    drafts.value = rest
   }
 
   function toggleOption(conceptId: string, optionId: PhotozoneOptionId) {
@@ -125,49 +54,63 @@ export function usePhotozoneOrder() {
     selection.value = { type: 'ready', conceptId, options: next }
   }
 
-  function notify(result: CartAddResult, label: string) {
-    // No «go to cart» link when the change is made on the cart page itself.
-    const action = route.path === cartLink.to ? undefined : { label: 'Перейти в корзину', to: cartLink.to }
-    if (result === 'added') toast.show({ title: 'Фотозоны добавлены в заявку', description: label, action })
-    else if (result === 'updated') toast.show({ title: 'Заявка обновлена', description: `${label}: опции изменены`, action })
-    else toast.show({ title: 'Уже в заявке', description: `${label} — без изменений`, action, tone: 'info' })
-  }
-
-  function addReady(conceptId: string): CartAddResult | null {
+  function readyItemOf(conceptId: string): CartItemInput | null {
     const concept = findConcept(conceptId)
-    if (!concept) return null
-    const options = optionsOf(conceptId)
-    const result = cart.add(readyItem(concept, options))
-    selection.value = { type: 'ready', conceptId, options }
-    notify(result, `«${concept.title}»`)
-    return result
+    return concept ? photozoneReadyItem(concept, optionsOf(conceptId)) : null
   }
 
-  function addCustom(): CartAddResult {
-    const result = cart.add(customItem())
-    selection.value = { type: 'custom' }
-    notify(result, 'Индивидуальный проект')
-    return result
-  }
-
-  /** Adds the current selection; `null` when nothing is chosen (the caller asks the visitor). */
-  function addSelection(): CartAddResult | null {
+  /** Item of the current page choice; `null` when nothing is chosen (the caller asks the visitor). */
+  function selectionItem(): { item: CartItemInput; label: string } | null {
     const s = selection.value
     if (!s) return null
-    return s.type === 'custom' ? addCustom() : addReady(s.conceptId)
+    if (s.type === 'custom') return { item: customItem(), label: 'Индивидуальный проект' }
+    const item = readyItemOf(s.conceptId)
+    return item ? { item, label: `«${findConcept(s.conceptId)!.title}»` } : null
   }
 
-  /** Whether the concept is in the cart with exactly these options. */
-  function isInCart(conceptId: string) {
-    return cart.has(readyKey(conceptId))
+  /** The custom project keeps the idea text already written in the selection. */
+  function customItem(): CartItemInput {
+    const saved = cart.find(PHOTOZONE_CUSTOM_KEY)
+    const config = saved ? readPhotozoneConfig(saved.config) : null
+    return photozoneCustomItem(config?.orderType === 'custom' ? config.notes : '')
   }
 
+  /** «Добавить к общей заявке» for a concept. */
+  async function addReady(conceptId: string) {
+    const item = readyItemOf(conceptId)
+    if (!item) return null
+    selection.value = { type: 'ready', conceptId, options: optionsOf(conceptId) }
+    return selectionUi.addToSelection(item, `«${findConcept(conceptId)!.title}»`)
+  }
+
+  /** «Отправить заявку» for a concept. */
+  async function submitReady(conceptId: string) {
+    const item = readyItemOf(conceptId)
+    if (!item) return null
+    selection.value = { type: 'ready', conceptId, options: optionsOf(conceptId) }
+    return selectionUi.submitWith(item)
+  }
+
+  async function addCustom() {
+    selection.value = { type: 'custom' }
+    return selectionUi.addToSelection(customItem(), 'Индивидуальный проект')
+  }
+
+  async function submitCustom() {
+    selection.value = { type: 'custom' }
+    return selectionUi.submitWith(customItem())
+  }
+
+  /** Whether the concept is in the selection (with any options). */
+  const isInCart = (conceptId: string) => cart.has(photozoneReadyKey(conceptId))
+
+  /** Whether the concept is in the selection with exactly the current options. */
   function isUpToDate(conceptId: string) {
-    const item = cart.find(readyKey(conceptId))
-    if (!item) return false
-    const saved = (item.config.options as string[] | undefined) ?? []
+    const item = cart.find(photozoneReadyKey(conceptId))
+    const config = item ? readPhotozoneConfig(item.config) : null
+    if (config?.orderType !== 'ready') return false
     const current = optionsOf(conceptId)
-    return saved.length === current.length && current.every((id) => saved.includes(id))
+    return config.options.length === current.length && current.every((id) => config.options.includes(id))
   }
 
   const selectionLabel = computed(() => {
@@ -189,18 +132,18 @@ export function usePhotozoneOrder() {
   return {
     selection,
     selectionLabel,
+    selectionItem,
     openConceptId,
     optionsOf,
     openConcept,
-    editConcept,
-    discardDraft,
     toggleOption,
     addReady,
+    submitReady,
     addCustom,
-    addSelection,
+    submitCustom,
     isInCart,
     isUpToDate,
-    customInCart: computed(() => cart.has(CUSTOM_KEY)),
+    customInCart: computed(() => cart.has(PHOTOZONE_CUSTOM_KEY)),
     reset,
   }
 }

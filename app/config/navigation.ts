@@ -18,9 +18,11 @@ export const mainNavigation: NavItem[] = [
   { label: 'FAQ', to: '/faq' },
 ]
 
-export const primaryCta: NavLink = { label: 'Оставить заявку', to: '/order' }
+/** Opens the shared request form; with an empty selection it suggests the services first. */
+export const primaryCta: NavLink = { label: 'Оставить заявку', to: '/checkout' }
 
-export const cartLink: NavLink = { label: 'Корзина', to: '/checkout' }
+/** The header indicator opens the selection drawer; `to` is the full request form. */
+export const cartLink: NavLink = { label: 'Моя подборка', to: '/checkout' }
 
 export const footerNavigation: NavGroup[] = [
   {

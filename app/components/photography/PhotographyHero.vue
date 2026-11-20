@@ -8,7 +8,6 @@ import { photographyHero } from '~/config/photography'
  * (copy left / photo right) and the booth hero (dark stage with a collage).
  */
 
-const { orderLink } = usePhotographyOrder()
 
 const media = useTemplateRef<HTMLElement>('media')
 // Scroll parallax only for a real photo (it is slightly overscaled so the edges never show).
@@ -49,7 +48,7 @@ const categories = ['Portraits', 'Love Stories', 'Family', 'Events', 'Business']
         <div
           class="flex flex-col items-stretch gap-3 motion-safe:animate-hero-enter motion-safe:[animation-delay:200ms] sm:flex-row sm:items-center sm:gap-7"
         >
-          <BaseButton :to="orderLink" size="lg" class="sm:w-auto">
+          <BaseButton to="#pricing" size="lg" class="sm:w-auto">
             Обсудить съёмку
             <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
           </BaseButton>

@@ -8,9 +8,10 @@ import { cartLink, mainNavigation, primaryCta } from '~/config/navigation'
  */
 defineProps<{ scrolled: boolean }>()
 
-// Number of positions in the shared request; 0 until the saved cart is loaded on the client.
+// Number of positions in «Моя подборка»; 0 until the saved selection is loaded on the client.
 const { count: cartCount } = useCart()
-const cartLabel = computed(() => (cartCount.value ? `${cartLink.label}: позиций — ${cartCount.value}` : cartLink.label))
+const { drawerOpen, openDrawer } = useSelection()
+const cartLabel = computed(() => (cartCount.value ? `${cartLink.label}, позиций: ${cartCount.value}` : `${cartLink.label}, пусто`))
 
 const menuOpen = ref(false)
 const menuButton = useTemplateRef<HTMLButtonElement>('menuButton')
@@ -55,23 +56,29 @@ watch(
       </nav>
 
       <div class="ml-auto flex items-center gap-1 lg:ml-0 lg:gap-3">
-        <NuxtLink
-          :to="cartLink.to"
+        <button
+          type="button"
           :aria-label="cartLabel"
-          class="relative inline-flex size-11 items-center justify-center rounded-button text-text transition-colors duration-(--motion-fast) hover:bg-text/5"
+          aria-haspopup="dialog"
+          :aria-expanded="drawerOpen"
+          class="relative inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-button px-2.5 text-text transition-colors duration-(--motion-fast) hover:bg-text/5 lg:px-3"
+          @click="openDrawer"
         >
-          <ShoppingBag class="size-5" :stroke-width="1.5" aria-hidden="true" />
-          <Transition name="cart-badge">
-            <span
-              v-if="cartCount"
-              :key="cartCount"
-              class="absolute top-1 right-0.5 inline-flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-text px-1 text-[0.6875rem] leading-none font-bold text-bg tabular-nums"
-              aria-hidden="true"
-            >
-              {{ cartCount }}
-            </span>
-          </Transition>
-        </NuxtLink>
+          <span class="relative inline-flex">
+            <ShoppingBag class="size-5" :stroke-width="1.5" aria-hidden="true" />
+            <Transition name="cart-badge">
+              <span
+                v-if="cartCount"
+                :key="cartCount"
+                class="absolute -top-1.5 -right-2 inline-flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-text px-1 text-[0.6875rem] leading-none font-bold text-bg tabular-nums"
+                aria-hidden="true"
+              >
+                {{ cartCount }}
+              </span>
+            </Transition>
+          </span>
+          <span class="hidden text-sm font-medium lg:inline" aria-hidden="true">{{ cartLink.label }}</span>
+        </button>
 
         <!-- Wrapper owns visibility: a display utility on BaseButton itself would compete with its inline-flex. -->
         <div class="hidden lg:block">

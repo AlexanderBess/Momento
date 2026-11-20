@@ -11,6 +11,8 @@ const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
+const shown = ref(false)
+useScrollLock(shown)
 
 // Which section (by its `to`) has its sub-list expanded; one at a time, reset on every close.
 const expanded = ref<string | null>(null)
@@ -26,15 +28,16 @@ watch(
     if (!el) return
     if (open && !el.open) {
       el.showModal()
-      document.documentElement.style.overflow = 'hidden'
+      shown.value = true
     } else if (!open && el.open) {
       el.close()
+      shown.value = false
     }
   },
 )
 
 function onClose() {
-  document.documentElement.style.overflow = ''
+  shown.value = false
   expanded.value = null
   if (props.open) emit('close')
 }
@@ -53,7 +56,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   desktopQuery?.removeEventListener('change', onBreakpoint)
-  document.documentElement.style.overflow = ''
 })
 </script>
 

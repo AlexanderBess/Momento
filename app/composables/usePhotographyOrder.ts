@@ -1,49 +1,55 @@
-import type { PhotographyExtraId, PhotographyPackageId } from '~/config/photography'
-import { buildOrderLink } from '~/config/order'
-import type { ServiceSlug } from '~/types/service'
-
-interface PhotographySelection {
-  package: PhotographyPackageId | null
-  extras: PhotographyExtraId[]
-  bundle: ServiceSlug[]
-}
+import type { PhotographyExtraId, PhotographyFormatId, PhotographyPackageId } from '~/config/photography'
+import { emptyPhotographyConfig, photographyItem, readPhotographyConfig, type PhotographyConfig } from '~/lib/selection'
 
 /**
- * Choices made on the photography page (package, add-ons, other services for the same order).
- * Page-scoped state: it only shapes the link into the shared order flow (`/order?…`, see config/order.ts),
- * there is no separate cart or booking. Every CTA on the page uses the same `orderLink`.
+ * Choices made on the photography page (direction, package, add-ons) and their bridge to
+ * «Моя подборка», where photography is one position.
+ *
+ * The page starts from the position already in the selection (if any), so «Отправить заявку»
+ * with no new choices never asks to replace it with an empty one. A different choice asks first.
  */
 export function usePhotographyOrder() {
-  const selection = useState<PhotographySelection>('photography-order', () => ({
-    package: null,
-    extras: [],
-    bundle: [],
-  }))
+  const cart = useCart()
+  const selectionUi = useSelection()
 
-  const orderLink = computed(() =>
-    buildOrderLink({
-      service: 'photography',
-      package: selection.value.package ?? undefined,
-      extras: selection.value.extras,
-      bundle: selection.value.bundle,
-    }),
-  )
+  const selection = useState<PhotographyConfig>('photography-order', emptyPhotographyConfig)
+  /** The visitor changed something on this page visit (then the saved position no longer overrides). */
+  const touched = useState('photography-order-touched', () => false)
 
-  const hasSelection = computed(
-    () => Boolean(selection.value.package) || selection.value.extras.length > 0 || selection.value.bundle.length > 0,
-  )
-
-  function toggle<T>(items: T[], item: T): T[] {
-    return items.includes(item) ? items.filter((i) => i !== item) : [...items, item]
+  /** Takes over the saved position once the selection is loaded (only if nothing was chosen yet). */
+  function syncFromSelection() {
+    if (touched.value) return
+    const saved = cart.find('photography')
+    selection.value = saved ? readPhotographyConfig(saved.config) : emptyPhotographyConfig()
   }
+
+  const item = computed(() => photographyItem(selection.value))
+  const hasSelection = computed(
+    () => Boolean(selection.value.package) || selection.value.extras.length > 0 || Boolean(selection.value.direction),
+  )
+  const inSelection = computed(() => cart.has('photography'))
+
+  function change(patch: Partial<PhotographyConfig>) {
+    touched.value = true
+    selection.value = { ...selection.value, ...patch }
+  }
+
+  const toggle = <T,>(list: T[], value: T): T[] => (list.includes(value) ? list.filter((i) => i !== value) : [...list, value])
 
   return {
     selection,
-    orderLink,
+    item,
     hasSelection,
-    selectPackage: (id: PhotographyPackageId | null) => (selection.value.package = id),
-    toggleExtra: (id: PhotographyExtraId) => (selection.value.extras = toggle(selection.value.extras, id)),
-    toggleBundle: (slug: ServiceSlug) => (selection.value.bundle = toggle(selection.value.bundle, slug)),
-    reset: () => (selection.value = { package: null, extras: [], bundle: [] }),
+    inSelection,
+    syncFromSelection,
+    selectPackage: (id: PhotographyPackageId | null) => change({ package: id }),
+    selectDirection: (id: PhotographyFormatId | null) => change({ direction: id }),
+    toggleExtra: (id: PhotographyExtraId) => change({ extras: toggle(selection.value.extras, id) }),
+    addToSelection: () => selectionUi.addToSelection(item.value, 'Фотосъёмка'),
+    submit: () => selectionUi.submitWith(item.value),
+    reset: () => {
+      touched.value = false
+      selection.value = emptyPhotographyConfig()
+    },
   }
 }

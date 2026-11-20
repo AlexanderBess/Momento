@@ -11,14 +11,25 @@ const props = withDefaults(
     title: string
     /** Visually hide the title (it still labels the dialog). */
     hideTitle?: boolean
-    size?: 'md' | 'lg'
+    size?: 'sm' | 'md' | 'lg'
+    /**
+     * Esc / ✕ / backdrop do not close the dialog but emit `close-request` — the owner decides
+     * (e.g. an editor with unsaved changes asks first).
+     */
+    guarded?: boolean
   }>(),
-  { hideTitle: false, size: 'md' },
+  { hideTitle: false, size: 'md', guarded: false },
 )
+
+const emit = defineEmits<{ 'close-request': [] }>()
 
 const open = defineModel<boolean>('open', { required: true })
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
 const uid = useId()
+
+/** Whether the native dialog is actually shown — drives the shared scroll lock. */
+const shown = ref(false)
+useScrollLock(shown)
 
 watch(
   open,
@@ -27,9 +38,11 @@ watch(
     if (!el) return
     if (value && !el.open) {
       el.showModal()
-      document.documentElement.style.overflow = 'hidden'
+      shown.value = true
     } else if (!value && el.open) {
       el.close()
+      // Release the scroll lock now — the `close` event is asynchronous and not guaranteed.
+      shown.value = false
     }
   },
   { flush: 'post' },
@@ -38,7 +51,7 @@ watch(
 onMounted(() => {
   if (open.value) {
     dialog.value?.showModal()
-    document.documentElement.style.overflow = 'hidden'
+    shown.value = true
   }
 })
 
@@ -46,18 +59,24 @@ function onClose() {
   // The `close` event is dispatched asynchronously. If the dialog was reopened in the meantime
   // (close → open again quickly), this event is stale and must not close the new session.
   if (dialog.value?.open) return
-  document.documentElement.style.overflow = ''
+  shown.value = false
   open.value = false
+}
+
+function requestClose() {
+  if (props.guarded) emit('close-request')
+  else open.value = false
+}
+
+function onCancel(event: Event) {
+  event.preventDefault()
+  requestClose()
 }
 
 /* Backdrop click: the click target is the <dialog> itself only outside its content box. */
 function onClick(event: MouseEvent) {
-  if (event.target === dialog.value) open.value = false
+  if (event.target === dialog.value) requestClose()
 }
-
-onBeforeUnmount(() => {
-  document.documentElement.style.overflow = ''
-})
 
 defineExpose({ el: dialog })
 </script>
@@ -68,7 +87,7 @@ defineExpose({ el: dialog })
     class="base-dialog"
     :class="`size-${props.size}`"
     :aria-labelledby="`${uid}-title`"
-    @cancel="open = false"
+    @cancel="onCancel"
     @close="onClose"
     @click="onClick"
   >
@@ -79,7 +98,7 @@ defineExpose({ el: dialog })
           type="button"
           class="-mt-1 -mr-2 ml-auto inline-flex size-11 shrink-0 items-center justify-center rounded-full text-text transition-colors hover:bg-text/6"
           aria-label="Закрыть"
-          @click="open = false"
+          @click="requestClose"
         >
           <X class="size-5" :stroke-width="1.75" aria-hidden="true" />
         </button>
@@ -114,6 +133,10 @@ defineExpose({ el: dialog })
     width: calc(100% - 2.5rem);
     max-height: min(88svh, 52rem);
     border-radius: var(--radius-modal);
+  }
+
+  .base-dialog.size-sm {
+    max-width: 28rem;
   }
 
   .base-dialog.size-md {
