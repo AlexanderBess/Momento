@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HomeHeroSection from '~/components/home/HeroSection.vue'
 import { brand } from '~/config/brand'
 
 useSeoMeta({
@@ -12,7 +13,7 @@ useSeoMeta({
 
 <template>
   <div>
-    <HeroSection />
+    <HomeHeroSection />
     <ServicesSection />
     <AIPhotoBoothSection />
     <PortfolioSection />
