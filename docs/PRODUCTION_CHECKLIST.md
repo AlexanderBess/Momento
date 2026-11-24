@@ -5,20 +5,20 @@ Use this on the exact candidate and intended host. Record build/commit, environm
 ## Owner and customer-facing gates
 
 - [ ] Owners approve offers, both cities, travel/delivery conditions, service availability, prices or individual-quote wording and actual print supplier combinations.
-- [ ] Public assets have permission for this use. Illustrations are identified. Empty galleries/portfolio and stub links are withheld or replaced. Header, footer and home agree.
+- [ ] Public assets have permission for this use. Illustrations are identified. Empty galleries, portfolio and unfinished FAQ and Contacts links are withheld or replaced. Header, footer and home agree. Preserve access to the approved privacy notice.
 - [ ] A monitored business contact is visible on the contact page, in the footer and on failure. Owner confirms a test contact reached the intended recipient.
 - [ ] Owner/legal signs off operator identity, data flow and locations, third-party transfers, notices/consent, access, retention, deletion and externally maintained records. Policy is published and reachable from checkout.
 - [ ] Named primary and backup owners can read the private group, access the external register and manually agree dates and prices. Agree a review schedule and customer follow-up wording.
 
 ## Engineering and platform gates
 
-- [ ] Install from the approved lock in a clean target build environment. Run lint, typecheck and production build. Confirm the FE-01 fixes on the candidate and record dependency advisory triage.
+- [ ] Install from the approved lock in a clean target build environment. Run lint, typecheck and production build. Confirm the FE-01 and FE-02 fixes on the candidate and record dependency advisory triage.
 - [ ] Build for the actual host OS/CPU and start the Node-capable Nitro artifact. HTTPS works, HTTP redirects, production hostname and scheme are correct, optimized images, fonts and all service routes load. Protect any staging host from indexing.
 - [ ] Inject private Telegram bot token/chat ID at runtime, restrict group access, prevent production use of the local test base and verify the client payload/bundle and proxy/application logs contain no secrets.
 - [ ] Set proxy/request byte limits, bounded server rate and concurrency limits and appropriate timeouts. Review proxy trust and production log access/retention.
 - [ ] Observe availability, aggregate delivery outcomes, latency and configuration failures. Verify alert ownership. Record the previous known-good artifact and configuration, restart procedure and rollback result.
 
-Local FE-01 verification passed lint, typecheck, production build and the Home/About browser checks. The engineering and public route gates remain open for the exact release candidate and intended host. See the [FE-01 verification record](PROJECT_STATUS.md#phase-01-fe-01).
+Local verification covers lint, typecheck, the Nitro production build, the four service entry points and selection navigation. Confirm the approved service area, monitored contact, privacy notice and indexing behavior on the release candidate. See the [FE-01](PROJECT_STATUS.md#phase-01-fe-01) and [FE-02](PROJECT_STATUS.md#phase-01-fe-02) records.
 
 ## Candidate acceptance scenarios
 

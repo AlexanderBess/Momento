@@ -7,8 +7,8 @@ import { photographyDirections } from '~/lib/selection'
 /*
  * Pricing: packages are the main offer; add-ons and the individual request are deliberately
  * quieter. The choice becomes the photography position of «Моя подборка»:
- *   «Отправить заявку» — sync it and open the request form;
- *   «Добавить к общей заявке» — add it and stay on the page.
+ * The primary action syncs the position and opens the request form.
+ * The secondary action adds it and stays on the page.
  * Values that are `null` in config are never shown as numbers.
  */
 
@@ -169,12 +169,12 @@ const summary = computed(() => {
             <p v-else class="mt-4 text-[0.9375rem] text-muted" aria-live="polite">Выберите пакет и дополнительные услуги.</p>
 
             <BaseButton size="lg" block class="mt-6" @click="submit">
-              Отправить заявку
+              К оформлению заявки
               <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
             </BaseButton>
             <BaseButton variant="secondary" size="lg" block class="mt-2" @click="addToSelection">
               <Plus class="size-4" :stroke-width="2" aria-hidden="true" />
-              Добавить к общей заявке
+              Добавить в подборку
             </BaseButton>
             <button
               v-if="inSelection"

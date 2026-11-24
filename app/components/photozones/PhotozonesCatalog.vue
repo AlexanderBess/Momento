@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ArrowUpRight, Check } from '@lucide/vue'
 import {
+  hasPhotozoneConcepts,
   photozoneCategoryLabels,
   photozoneCategoryNames,
   photozoneConcepts,
@@ -17,13 +18,16 @@ type Filter = 'all' | PhotozoneCategory
 
 const filters: { id: Filter; label: string }[] = [
   { id: 'all', label: 'Все' },
-  ...(Object.keys(photozoneCategoryLabels) as PhotozoneCategory[]).map((id) => ({ id, label: photozoneCategoryLabels[id] })),
+  ...(Object.keys(photozoneCategoryLabels) as PhotozoneCategory[])
+    .filter((id) => photozoneConcepts.some((concept) => concept.categories.includes(id)))
+    .map((id) => ({ id, label: photozoneCategoryLabels[id] })),
 ]
 
 const active = ref<Filter>('all')
-const visible = computed(() =>
-  active.value === 'all' ? photozoneConcepts : photozoneConcepts.filter((c) => c.categories.includes(active.value as PhotozoneCategory)),
-)
+const visible = computed(() => {
+  const filter = active.value
+  return filter === 'all' ? photozoneConcepts : photozoneConcepts.filter((concept) => concept.categories.includes(filter))
+})
 
 const { openConcept, isInCart } = usePhotozoneOrder()
 const { ready } = useCart()
@@ -36,11 +40,11 @@ const { ready } = useCart()
         <div class="lg:col-span-7">
           <p v-reveal class="eyebrow">03 / Collection</p>
           <h2 id="pz-collection-title" v-reveal="60" class="mt-5 font-display text-h2">Коллекция MOMENTO</h2>
-          <p v-reveal="100" class="mt-5 max-w-lg text-lead text-muted">
+          <p v-if="hasPhotozoneConcepts" v-reveal="100" class="mt-5 max-w-lg text-lead text-muted">
             Продуманные композиции для событий, которые хочется запомнить.
           </p>
         </div>
-        <p v-reveal="140" class="max-w-sm text-[0.8125rem] leading-relaxed text-muted lg:col-span-5 lg:justify-self-end">
+        <p v-if="hasPhotozoneConcepts" v-reveal="140" class="max-w-sm text-[0.8125rem] leading-relaxed text-muted lg:col-span-5 lg:justify-self-end">
           Сейчас в коллекции — концепции оформления: иллюстрации показывают идею, фото реальных проектов добавим позже.
           <template v-if="photozonePricing.isDemo">Цены — демонстрационные и будут уточнены.</template>
         </p>
@@ -48,6 +52,7 @@ const { ready } = useCart()
 
       <!-- ---------- Filters ---------- -->
       <div
+        v-if="hasPhotozoneConcepts"
         v-reveal="80"
         class="no-scrollbar -mx-(--gutter) mt-10 flex gap-2 overflow-x-auto px-(--gutter) pb-1 md:mt-14"
         role="group"
@@ -65,7 +70,7 @@ const { ready } = useCart()
           {{ filter.label }}
         </button>
       </div>
-      <p class="sr-only" aria-live="polite">Показано концепций: {{ visible.length }}</p>
+      <p v-if="hasPhotozoneConcepts" class="sr-only" aria-live="polite">Показано концепций: {{ visible.length }}</p>
 
       <!-- ---------- Cards ---------- -->
       <TransitionGroup
@@ -83,7 +88,7 @@ const { ready } = useCart()
                 class="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-text px-3 py-1.5 text-xs font-semibold text-bg"
               >
                 <Check class="size-3.5" :stroke-width="2.5" aria-hidden="true" />
-                В заявке
+                В подборке
               </span>
             </div>
 
@@ -126,8 +131,8 @@ const { ready } = useCart()
       </TransitionGroup>
 
       <div v-else class="mt-12 rounded-card border border-dashed border-border px-6 py-12 text-center">
-        <p class="font-display text-h3">Скоро здесь появятся новые концепции</p>
-        <p class="mt-3 text-muted">А пока можно обсудить индивидуальный проект.</p>
+        <p class="font-display text-h3">Готовых фотозон пока нет</p>
+        <p class="mt-3 text-muted">Можно выбрать индивидуальный проект.</p>
         <BaseButton to="#custom" variant="secondary" class="mt-6">Индивидуальный проект</BaseButton>
       </div>
     </div>

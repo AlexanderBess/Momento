@@ -8,18 +8,16 @@ export const servicesNavigation: NavLink[] = services.map(({ title, summary, hre
   description: summary,
 }))
 
-// «Портфолио» is intentionally not in the header until there is enough material;
-// the page itself (/portfolio) and its footer link stay.
+// Portfolio, FAQ and Contacts remain available by direct URL until their content is ready.
 // For an item with `children`, `to` is only the section's path prefix (marks the trigger as current);
 // there is no /services index page.
 export const mainNavigation: NavItem[] = [
   { label: 'Услуги', to: '/services', children: servicesNavigation },
   { label: 'О нас', to: '/about' },
-  { label: 'FAQ', to: '/faq' },
 ]
 
 /** Opens the shared request form; with an empty selection it suggests the services first. */
-export const primaryCta: NavLink = { label: 'Оставить заявку', to: '/checkout' }
+export const primaryCta: NavLink = { label: 'К заявке', to: '/checkout' }
 
 /** The header indicator opens the selection drawer; `to` is the full request form. */
 export const cartLink: NavLink = { label: 'Моя подборка', to: '/checkout' }
@@ -31,12 +29,7 @@ export const footerNavigation: NavGroup[] = [
   },
   {
     title: 'Компания',
-    links: [
-      { label: 'Портфолио', to: '/portfolio' },
-      { label: 'О нас', to: '/about' },
-      { label: 'FAQ', to: '/faq' },
-      { label: 'Контакты', to: '/contacts' },
-    ],
+    links: [{ label: 'О нас', to: '/about' }],
   },
 ]
 

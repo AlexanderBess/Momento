@@ -104,7 +104,7 @@ const uid = useId()
         </p>
 
         <div
-          class="mt-1 flex w-full flex-col gap-3 motion-safe:animate-hero-enter motion-safe:[animation-delay:180ms] sm:w-auto sm:flex-row"
+          class="mt-1 flex w-full flex-col gap-3 motion-safe:animate-hero-enter motion-safe:[animation-delay:180ms] sm:w-auto sm:max-w-full sm:flex-row sm:flex-wrap"
         >
           <BaseButton to="#studio" size="lg" block class="sm:w-auto">
             Создать фотокнигу

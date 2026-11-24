@@ -16,7 +16,7 @@ import { primaryCta } from '~/config/navigation'
           Готовы создать незабываемые воспоминания?
         </h2>
         <p class="mt-5 max-w-lg text-lead text-muted">
-          Оставьте заявку — и мы подберём лучшее решение для вашего события.
+          Выберите услуги и соберите их в одну заявку. Детали обсудим с вами после отправки.
         </p>
         <BaseButton :to="primaryCta.to" size="lg" class="mt-9">
           {{ primaryCta.label }}

@@ -6,8 +6,8 @@ import { photobookPricing } from '~/config/photobook/pricing'
  * Price + quantity + the order actions. `panel` — full block with the breakdown (studio sidebar),
  * `bar` — one line for the sticky mobile bar.
  *
- *   «Добавить в заказ» — puts this book into «Моя подборка» and stays in the studio;
- *   «Оформить заказ»   — adds / syncs this book and opens the request form.
+ * The add action keeps the visitor in the studio. The checkout action syncs the book
+ * to the selection and opens the request form.
  * Saving the project alone never adds the book. Once added, the position follows every save.
  */
 withDefaults(defineProps<{ variant?: 'panel' | 'bar' }>(), { variant: 'panel' })
@@ -54,12 +54,12 @@ async function checkout() {
       type="button"
       class="stepper-button"
       :class="project.inSelection.value && 'border-success! text-success'"
-      :aria-label="project.inSelection.value ? 'Книга в подборке — обновить' : 'Добавить в заказ'"
+      :aria-label="project.inSelection.value ? 'Книга в подборке — обновить' : 'Добавить в подборку'"
       @click="add"
     >
       <component :is="project.inSelection.value ? Check : Plus" class="size-5" :stroke-width="2" aria-hidden="true" />
     </button>
-    <BaseButton @click="checkout">Оформить заказ</BaseButton>
+    <BaseButton @click="checkout">К заявке</BaseButton>
   </div>
 
   <!-- ---------- Panel ---------- -->
@@ -147,12 +147,12 @@ async function checkout() {
 
     <div class="flex flex-col gap-2">
       <BaseButton size="lg" block @click="checkout">
-        Оформить заказ
+        К оформлению заявки
         <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
       </BaseButton>
       <BaseButton size="lg" variant="secondary" block @click="add">
         <component :is="project.inSelection.value ? Check : Plus" class="size-4" :stroke-width="2" aria-hidden="true" />
-        {{ project.inSelection.value ? 'Книга в заказе' : 'Добавить в заказ' }}
+        {{ project.inSelection.value ? 'Книга в подборке' : 'Добавить в подборку' }}
       </BaseButton>
       <button
         v-if="project.inSelection.value"

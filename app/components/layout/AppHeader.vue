@@ -18,7 +18,11 @@ const menuButton = useTemplateRef<HTMLButtonElement>('menuButton')
 
 function closeMenu({ restoreFocus = true } = {}) {
   menuOpen.value = false
-  if (restoreFocus) nextTick(() => menuButton.value?.focus())
+  if (restoreFocus) {
+    nextTick(() => {
+      if (!menuOpen.value && !drawerOpen.value) menuButton.value?.focus()
+    })
+  }
 }
 
 const route = useRoute()
@@ -92,7 +96,7 @@ watch(
           :aria-expanded="menuOpen"
           aria-controls="mobile-navigation"
           aria-label="Открыть меню"
-          @click="menuOpen = true"
+          @click="menuOpen = !drawerOpen"
         >
           <Menu class="size-6" :stroke-width="1.5" aria-hidden="true" />
         </button>

@@ -5,8 +5,8 @@ import { eventTypeLabels, eventTypes } from '~/config/order'
 
 /*
  * Request block: optional event type and design wishes form the booth position of «Моя подборка».
- *   «Отправить заявку» — sync the position and open the request form;
- *   «Добавить к общей заявке» — add it and stay on the page.
+ * The primary action syncs the position and opens the request form.
+ * The secondary action adds it and stays on the page.
  */
 const { event: selected, design, toggleDesign, inSelection, addToSelection, submit } = useBoothOrder()
 const { openDrawer } = useSelection()
@@ -64,12 +64,12 @@ const { openDrawer } = useSelection()
 
         <div class="mt-8 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
           <BaseButton size="lg" class="w-full sm:w-auto" @click="submit">
-            Отправить заявку
+            К оформлению заявки
             <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
           </BaseButton>
           <BaseButton size="lg" variant="secondary" class="w-full sm:w-auto" @click="addToSelection">
             <Plus class="size-4" :stroke-width="2" aria-hidden="true" />
-            Добавить к общей заявке
+            Добавить в подборку
           </BaseButton>
         </div>
         <button

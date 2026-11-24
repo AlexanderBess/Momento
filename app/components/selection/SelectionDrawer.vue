@@ -87,6 +87,7 @@ const onCheckout = computed(() => route.path === CHECKOUT_PATH)
               <NuxtLink
                 :to="service.href"
                 class="group flex min-h-14 items-center justify-between gap-3 rounded-card border border-border bg-surface px-5 py-3 transition-colors hover:border-text/40"
+                @click="closeDrawer"
               >
                 <span class="font-semibold">{{ service.title }}</span>
                 <ArrowRight class="size-4 text-muted transition-transform group-hover:translate-x-0.5" :stroke-width="2" aria-hidden="true" />
@@ -106,7 +107,7 @@ const onCheckout = computed(() => route.path === CHECKOUT_PATH)
         <p v-if="total.hasKnown && total.hasOnRequest" class="mt-0.5 text-right text-xs text-muted">+ позиции с индивидуальным расчётом</p>
         <p v-if="total.hasDemo" class="mt-0.5 text-right text-xs text-muted">Включает демо-цены</p>
         <BaseButton v-if="!onCheckout" size="lg" block class="mt-4" @click="goToCheckout">
-          Оформить заявку
+          К оформлению заявки
           <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
         </BaseButton>
         <BaseButton v-else size="lg" block class="mt-4" @click="closeDrawer">Вернуться к оформлению</BaseButton>

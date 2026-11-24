@@ -16,7 +16,6 @@ useSeoMeta({
     <HomeHeroSection />
     <ServicesSection />
     <AIPhotoBoothSection />
-    <PortfolioSection />
     <BenefitsSection />
     <FinalCTASection />
   </div>

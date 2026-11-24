@@ -9,6 +9,7 @@ import { mainNavigation, primaryCta } from '~/config/navigation'
  */
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: [] }>()
+const route = useRoute()
 
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
 const shown = ref(false)
@@ -29,14 +30,16 @@ watch(
     if (open && !el.open) {
       el.showModal()
       shown.value = true
-    } else if (!open && el.open) {
-      el.close()
+    } else if (!open) {
+      if (el.open) el.close()
       shown.value = false
+      expanded.value = null
     }
   },
 )
 
 function onClose() {
+  if (dialog.value?.open) return
   shown.value = false
   expanded.value = null
   if (props.open) emit('close')
@@ -64,6 +67,7 @@ onBeforeUnmount(() => {
     ref="dialog"
     class="mobile-nav m-0 h-dvh max-h-none w-full max-w-none bg-bg p-0 text-text lg:hidden"
     aria-label="Меню"
+    @cancel.prevent="emit('close')"
     @close="onClose"
   >
     <div class="container-page flex h-(--header-height) items-center justify-between">
@@ -85,6 +89,7 @@ onBeforeUnmount(() => {
             <button
               type="button"
               class="flex min-h-16 w-full items-center justify-between py-3 text-left font-display text-[2rem] leading-tight"
+              :class="item.children.some((child) => child.to === route.path) && 'text-accent'"
               :aria-expanded="expanded === item.to"
               :aria-controls="sectionId(item.to)"
               @click="toggle(item.to)"
@@ -123,7 +128,7 @@ onBeforeUnmount(() => {
           <NuxtLink
             v-else
             :to="item.to"
-            class="group flex min-h-16 items-center justify-between py-3 font-display text-[2rem] leading-tight"
+            class="group flex min-h-16 items-center justify-between py-3 font-display text-[2rem] leading-tight aria-[current=page]:text-accent"
             @click="emit('close')"
           >
             {{ item.label }}

@@ -179,7 +179,7 @@ async function submit() {
 
 const failureText: Record<LeadFailureReason, string> = {
   'not-configured':
-    'Онлайн-отправка заявок пока не подключена, поэтому заявка не отправлена. Подборка и заполненные поля сохранены на этом устройстве — попробуйте позже или свяжитесь с нами напрямую.',
+    'Онлайн-отправка заявок пока не подключена. Подборка и заполненные поля сохранены на этом устройстве. Попробуйте отправить заявку позже.',
   network: 'Не удалось связаться с сервером. Проверьте подключение и отправьте ещё раз — заявка не продублируется.',
   'delivery-failed': 'Сервер не смог передать заявку команде. Данные сохранены — попробуйте отправить ещё раз чуть позже.',
   invalid: 'Проверьте отмеченные поля.',
@@ -246,10 +246,10 @@ const minDate = todayIso()
               <SelectionList />
             </div>
             <p v-if="shownError('items')" class="mt-2 text-sm text-error">{{ shownError('items') }}</p>
-            <button type="button" class="mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold underline-offset-[6px] hover:underline" @click="navigateTo('/#services')">
+            <NuxtLink to="/#services" class="mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold underline-offset-[6px] hover:underline">
               <ArrowLeft class="size-4" :stroke-width="1.75" aria-hidden="true" />
               Добавить другие услуги
-            </button>
+            </NuxtLink>
           </section>
 
           <!-- ---------- 2. About the event (optional, collapsed) ---------- -->

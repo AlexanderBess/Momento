@@ -84,7 +84,7 @@ const more = photographyMoreFormats.map((format, index) => ({
             class="group/link mt-8 inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-accent underline-offset-[6px] hover:underline"
             @click="selectDirection(format.id)"
           >
-            Обсудить съёмку
+            Выбрать это направление
             <ArrowRight
               class="size-4 transition-transform duration-(--motion-normal) ease-standard group-hover/link:translate-x-0.5"
               :stroke-width="2"
@@ -102,7 +102,7 @@ const more = photographyMoreFormats.map((format, index) => ({
             <NuxtLink
               to="#pricing"
             class="group grid grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-x-3 py-6 md:block md:border-l md:border-border md:py-1 md:pl-6"
-              :aria-label="`${format.title} — обсудить съёмку`"
+              :aria-label="`${format.title} — выбрать направление съёмки`"
               @click="selectDirection(format.id)"
             >
               <span class="pt-0.5 font-display text-lg text-muted italic md:block" aria-hidden="true">{{ format.index }}</span>

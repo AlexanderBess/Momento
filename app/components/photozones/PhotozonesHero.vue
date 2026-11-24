@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ArrowDown, ArrowRight } from '@lucide/vue'
-import { photozoneConcepts, photozonesHero } from '~/config/photozones'
+import { hasPhotozoneConcepts, photozoneConcepts, photozonesHero } from '~/config/photozones'
 
 /*
  * Photo zones hero: a sage «room» — the whole first screen sits on the mist tint, so the visitor
  * immediately sees they are in another section of the site. Copy on the left, a tall visual on the
  * right with a smaller second frame overlapping it (asymmetric, editorial). Header stays untouched.
  */
-const secondary = photozoneConcepts[1]!.gallery[0]!
+const secondary = photozoneConcepts[1]?.gallery[0] ?? photozoneConcepts[0]?.gallery[0]
 </script>
 
 <template>
@@ -35,17 +35,18 @@ const secondary = photozoneConcepts[1]!.gallery[0]!
         </h1>
 
         <p class="max-w-[30rem] text-lead text-muted motion-safe:animate-hero-enter motion-safe:[animation-delay:120ms]">
-          Создаём фотозоны для свадеб, дней рождения и других событий. Готовые концепции и индивидуальные решения с
-          доставкой и установкой под ключ.
+          Создаём фотозоны для свадеб, дней рождения и других событий.
+          {{ hasPhotozoneConcepts ? 'Готовые концепции и индивидуальные решения' : 'Индивидуальные решения' }}
+          с доставкой и установкой под ключ.
         </p>
 
         <div class="flex flex-col gap-3 motion-safe:animate-hero-enter motion-safe:[animation-delay:200ms] sm:flex-row sm:items-center sm:gap-4">
-          <BaseButton to="#collection" size="lg">
+          <BaseButton v-if="hasPhotozoneConcepts" to="#collection" size="lg">
             Смотреть фотозоны
             <template #icon><ArrowDown class="size-4" :stroke-width="2" /></template>
           </BaseButton>
           <BaseButton to="#custom" size="lg" variant="ghost" class="ring-1 ring-service-accent/35 ring-inset hover:bg-bg/60">
-            Создать свою
+            Индивидуальный проект
             <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
           </BaseButton>
         </div>
@@ -63,6 +64,7 @@ const secondary = photozoneConcepts[1]!.gallery[0]!
           </figcaption>
         </figure>
         <div
+          v-if="secondary"
           class="absolute bottom-[14%] left-0 w-[38%] max-w-[13rem] rounded-card shadow-(--shadow-raised) ring-6 ring-service-bg motion-safe:animate-hero-enter motion-safe:[animation-delay:320ms]"
           aria-hidden="true"
         >

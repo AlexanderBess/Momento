@@ -5,13 +5,14 @@ type Filter = GalleryCategory | 'all'
 
 const filter = ref<Filter>('all')
 const limit = ref(GALLERY_PAGE_SIZE)
+const published = boothGallery.filter(({ image }) => image.src)
 
 const categories = (Object.keys(galleryCategoryLabels) as GalleryCategory[]).filter((c) =>
-  boothGallery.some((item) => item.category === c),
+  published.some((item) => item.category === c),
 )
 
 const filtered = computed(() =>
-  filter.value === 'all' ? boothGallery : boothGallery.filter((item) => item.category === filter.value),
+  filter.value === 'all' ? published : published.filter((item) => item.category === filter.value),
 )
 // Images are rendered in pages — the rest is loaded only on request.
 const visible = computed(() => filtered.value.slice(0, limit.value))
@@ -36,8 +37,13 @@ function select(next: Filter) {
         />
       </div>
 
+      <BaseButton v-if="!published.length" to="#customization" variant="secondary" class="mt-6">
+        Варианты оформления
+      </BaseButton>
+
       <!-- Filters: horizontal scroll on narrow screens instead of wrapping into many rows. -->
       <div
+        v-else
         v-reveal="80"
         class="no-scrollbar -mx-(--gutter) mt-8 flex gap-2 overflow-x-auto px-(--gutter) pb-1 md:mt-10"
         role="group"
@@ -57,7 +63,7 @@ function select(next: Filter) {
       </div>
 
       <!-- Masonry via CSS columns; crossfade when the category changes. -->
-      <Transition name="gallery-fade" mode="out-in">
+      <Transition v-if="published.length" name="gallery-fade" mode="out-in">
         <ul :key="filter" class="mt-8 columns-2 gap-3 sm:gap-4 md:mt-10 lg:columns-3 lg:gap-5" aria-live="polite">
           <li
             v-for="(item, index) in visible"

@@ -4,8 +4,9 @@ import type { NavItem } from '~/types/navigation'
 
 /**
  * Desktop header dropdown (disclosure pattern: a button that shows a list of links).
- * Opens on mouse hover or click; closes on mouse leave (debounced), outside click, Esc,
- * focus leaving the menu and route change. Arrow keys / Home / End move between links.
+ * Opens on mouse hover or click. Hover closes on mouse leave unless focus is inside.
+ * Outside clicks, Escape, focus leaving and route changes close either mode.
+ * Arrow keys / Home / End move between links.
  */
 const props = defineProps<{ item: NavItem }>()
 
@@ -42,9 +43,11 @@ function onPointerEnter(event: PointerEvent) {
 }
 
 function onPointerLeave(event: PointerEvent) {
-  if (event.pointerType !== 'mouse') return
+  if (event.pointerType !== 'mouse' || !openedByHover.value) return
   cancelClose()
-  closeTimer = setTimeout(() => hide(), CLOSE_DELAY)
+  closeTimer = setTimeout(() => {
+    if (!root.value?.contains(document.activeElement)) hide()
+  }, CLOSE_DELAY)
 }
 
 function onTriggerClick() {
@@ -91,16 +94,16 @@ function onPanelKeydown(event: KeyboardEvent) {
 }
 
 function onKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape' && open.value) {
+  if (event.key === 'Escape' && !event.defaultPrevented && open.value) {
     event.preventDefault()
-    hide({ restoreFocus: true })
+    hide({ restoreFocus: root.value?.contains(document.activeElement) })
   }
 }
 
 // Tabbing out of the trigger + panel closes the menu.
 function onFocusOut(event: FocusEvent) {
   const next = event.relatedTarget as Node | null
-  if (open.value && next && !root.value?.contains(next)) hide()
+  if (open.value && !root.value?.contains(next)) hide()
 }
 
 function onDocumentPointerDown(event: PointerEvent) {
@@ -109,8 +112,13 @@ function onDocumentPointerDown(event: PointerEvent) {
 
 watch(open, (isOpen) => {
   if (!import.meta.client) return
-  if (isOpen) document.addEventListener('pointerdown', onDocumentPointerDown)
-  else document.removeEventListener('pointerdown', onDocumentPointerDown)
+  if (isOpen) {
+    document.addEventListener('pointerdown', onDocumentPointerDown)
+    document.addEventListener('keydown', onKeydown)
+  } else {
+    document.removeEventListener('pointerdown', onDocumentPointerDown)
+    document.removeEventListener('keydown', onKeydown)
+  }
 })
 
 const route = useRoute()
@@ -120,11 +128,12 @@ watch(
 )
 
 // The section trigger reads as current on any of its child pages.
-const sectionActive = computed(() => route.path.startsWith(`${props.item.to}/`))
+const sectionActive = computed(() => props.item.children?.some((child) => child.to === route.path))
 
 onBeforeUnmount(() => {
   cancelClose()
   document.removeEventListener('pointerdown', onDocumentPointerDown)
+  document.removeEventListener('keydown', onKeydown)
 })
 </script>
 
@@ -134,7 +143,6 @@ onBeforeUnmount(() => {
     class="relative"
     @pointerenter="onPointerEnter"
     @pointerleave="onPointerLeave"
-    @keydown="onKeydown"
     @focusout="onFocusOut"
   >
     <button
@@ -163,7 +171,7 @@ onBeforeUnmount(() => {
       leave-to-class="opacity-0 -translate-y-1"
     >
       <!-- pt-2 is an invisible hover bridge between the trigger and the card. -->
-      <div v-show="open" :id="panelId" class="absolute top-full -left-2 w-[22rem] pt-2" @keydown="onPanelKeydown">
+      <div v-show="open" :id="panelId" :inert="!open" class="absolute top-full -left-2 w-[22rem] pt-2" @keydown="onPanelKeydown">
         <div class="rounded-card border border-border/70 bg-surface p-2 shadow-soft">
           <ul>
             <li v-for="child in item.children" :key="child.to">
@@ -171,7 +179,7 @@ onBeforeUnmount(() => {
                 :to="child.to"
                 data-nav-dropdown-link
                 class="group block rounded-button px-3.5 py-3 transition-colors duration-(--motion-fast) hover:bg-bg focus-visible:bg-bg aria-[current=page]:bg-bg"
-                @click="hide()"
+                @click="hide({ restoreFocus: true })"
               >
                 <span class="block text-sm font-medium text-text">{{ child.label }}</span>
                 <span v-if="child.description" class="mt-0.5 block text-[0.8125rem] leading-snug text-muted">

@@ -11,8 +11,8 @@ import { photozonePrice } from '~/lib/selection'
 /*
  * Details of a ready concept in the shared BaseDialog (bottom sheet on phones): gallery, description,
  * size, composition, suitable events, base price and add-on options.
- * Footer: «Отправить заявку» (sync this concept, then open the request form) and «Добавить к общей
- * заявке» (add / update and stay). Options are remembered per concept while on the page.
+ * The footer can add or update a concept in the selection, then optionally open the request form.
+ * Options are remembered per concept while on the page.
  * Positions already in the selection are edited in «Моя подборка» (ItemEditor).
  */
 const { openConceptId, optionsOf, toggleOption, addReady, submitReady, isInCart, isUpToDate } = usePhotozoneOrder()
@@ -44,7 +44,7 @@ const state = computed(() => {
 })
 
 const addLabel = computed(() =>
-  state.value === 'new' ? 'Добавить к общей заявке' : state.value === 'changed' ? 'Обновить в подборке' : 'Уже в подборке',
+  state.value === 'new' ? 'Добавить в подборку' : state.value === 'changed' ? 'Обновить в подборке' : 'Уже в подборке',
 )
 
 // The dialog closes in the same tick, so the toast / confirmation is never hidden behind it.
@@ -169,7 +169,7 @@ function submit() {
             {{ addLabel }}
           </BaseButton>
           <BaseButton class="w-full sm:w-auto" @click="submit">
-            Отправить заявку
+            К оформлению заявки
             <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
           </BaseButton>
         </div>

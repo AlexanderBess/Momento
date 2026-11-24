@@ -2,7 +2,7 @@
 import { ArrowRight } from '@lucide/vue'
 
 /*
- * Compact floating «Обсудить съёмку» for phones and tablets.
+ * Compact link to photography options for phones and tablets.
  * Appears once the hero has left the viewport; hides again while the pricing block (it has its own
  * order button) is on screen and from the final CTA onwards, so it never covers the footer.
  */
@@ -44,7 +44,7 @@ const visible = computed(() => !heroVisible.value && !pricingVisible.value && !c
         to="#pricing"
         class="pointer-events-auto inline-flex h-12 items-center gap-2 rounded-full bg-text pr-4 pl-5 text-sm font-semibold text-bg shadow-[0_12px_32px_-12px_rgb(41_39_36/0.55)] transition-[scale] duration-(--motion-normal) active:scale-[0.97]"
       >
-        Обсудить съёмку
+        Подобрать съёмку
         <span class="inline-flex size-7 items-center justify-center rounded-full bg-accent" aria-hidden="true">
           <ArrowRight class="size-3.5" :stroke-width="2.25" />
         </span>

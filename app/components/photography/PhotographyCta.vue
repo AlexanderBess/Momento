@@ -17,7 +17,7 @@ import { ArrowRight } from '@lucide/vue'
             Расскажите нам о своём событии или идее съёмки. Вместе подберём подходящий формат.
           </p>
           <BaseButton to="#pricing" size="lg" class="w-full sm:w-auto">
-            Обсудить съёмку
+            Подобрать съёмку
             <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
           </BaseButton>
         </div>

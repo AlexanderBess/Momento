@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { ArrowDown, ArrowRight, Plus, Sparkles } from '@lucide/vue'
-import { photozonesFinalCta } from '~/config/photozones'
+import { hasPhotozoneConcepts, photozonesFinalCta } from '~/config/photozones'
 
 /*
  * Closing block on the sage mist tint. Both actions use the visitor's current choice on the page
  * (a concept opened in the catalogue with its options, or the individual project):
- *   «Отправить заявку» — sync the choice and open the request form;
- *   «Добавить к общей заявке» — add it and stay here.
- * Without a choice it asks which one — nothing undefined is ever added silently. «Отправить
- * заявку» with photo zones already in the selection simply opens the form.
+ * The primary action syncs the choice and opens the request form; the secondary action stays here.
+ * Without a choice, ask what to add. If a photozone is already in the selection, checkout can open directly.
  */
 const { selection, selectionLabel, selectionItem, addCustom, submitCustom } = usePhotozoneOrder()
 const { items } = useCart()
@@ -41,12 +39,6 @@ function onSubmit() {
   chooserOpen.value = true
 }
 
-function chooseReady() {
-  chooserOpen.value = false
-  // The dialog releases the page scroll lock in its (async) `close` event — scroll after that.
-  setTimeout(() => document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
-}
-
 function chooseCustom() {
   chooserOpen.value = false
   if (pendingAction.value === 'submit') submitCustom()
@@ -68,7 +60,8 @@ function chooseCustom() {
             Создадим пространство <em class="italic">для ваших моментов</em>
           </h2>
           <p v-reveal="100" class="mt-6 max-w-md text-lead text-muted">
-            Выберите готовую фотозону или расскажите о своей идее. Мы обсудим детали и подготовим предложение.
+            {{ hasPhotozoneConcepts ? 'Выберите готовую фотозону или расскажите о своей идее.' : 'Расскажите о своей идее.' }}
+            Мы обсудим детали и подготовим предложение.
           </p>
 
           <div v-reveal="140" class="mt-9 flex flex-col gap-4">
@@ -77,17 +70,17 @@ function chooseCustom() {
             </p>
             <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <BaseButton size="lg" class="w-full sm:w-auto" @click="onSubmit">
-                Отправить заявку
+                К оформлению заявки
                 <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
               </BaseButton>
               <BaseButton size="lg" variant="secondary" class="w-full sm:w-auto" @click="onAdd">
                 <Plus class="size-4" :stroke-width="2" aria-hidden="true" />
-                Добавить к общей заявке
+                Добавить в подборку
               </BaseButton>
             </div>
             <NuxtLink
               v-if="selection"
-              to="#collection"
+              :to="selection.type === 'ready' ? '#collection' : '#custom'"
               class="inline-flex min-h-11 items-center self-start text-sm font-semibold underline-offset-[6px] hover:underline"
             >
               Изменить выбор
@@ -99,9 +92,9 @@ function chooseCustom() {
 
     <!-- Asked only when nothing is chosen yet. -->
     <BaseDialog v-model:open="chooserOpen" title="Какую фотозону выбрать?">
-      <p class="text-[0.9375rem] text-muted">Выберите готовую фотозону из коллекции или индивидуальный проект.</p>
+      <p v-if="hasPhotozoneConcepts" class="text-[0.9375rem] text-muted">Выберите готовую фотозону из коллекции или индивидуальный проект.</p>
       <div class="mt-6 grid gap-3">
-        <button type="button" class="option-card flex items-center gap-4 p-4 text-left" @click="chooseReady">
+        <NuxtLink v-if="hasPhotozoneConcepts" to="#collection" class="option-card flex items-center gap-4 p-4 text-left" @click="chooserOpen = false">
           <span class="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-service-bg text-(--color-accent)" aria-hidden="true">
             <ArrowDown class="size-5" :stroke-width="1.5" />
           </span>
@@ -109,7 +102,7 @@ function chooseCustom() {
             <span class="font-semibold">Выбрать готовую фотозону</span>
             <span class="text-sm text-muted">Перейти к коллекции и выбрать концепцию</span>
           </span>
-        </button>
+        </NuxtLink>
         <button type="button" class="option-card flex items-center gap-4 p-4 text-left" @click="chooseCustom">
           <span class="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-service-bg text-(--color-accent)" aria-hidden="true">
             <Sparkles class="size-5" :stroke-width="1.5" />

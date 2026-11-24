@@ -49,7 +49,7 @@ const categories = ['Portraits', 'Love Stories', 'Family', 'Events', 'Business']
           class="flex flex-col items-stretch gap-3 motion-safe:animate-hero-enter motion-safe:[animation-delay:200ms] sm:flex-row sm:items-center sm:gap-7"
         >
           <BaseButton to="#pricing" size="lg" class="sm:w-auto">
-            Обсудить съёмку
+            Подобрать съёмку
             <template #icon><ArrowRight class="size-4" :stroke-width="2" /></template>
           </BaseButton>
           <NuxtLink

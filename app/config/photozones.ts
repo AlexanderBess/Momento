@@ -187,6 +187,8 @@ export const photozoneConcepts: PhotozoneConcept[] = [
   },
 ]
 
+export const hasPhotozoneConcepts = photozoneConcepts.length > 0
+
 export function findConcept(id: string): PhotozoneConcept | undefined {
   return photozoneConcepts.find((c) => c.id === id)
 }

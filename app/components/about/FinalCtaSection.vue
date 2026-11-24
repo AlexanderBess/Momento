@@ -47,7 +47,7 @@ const ctaImage: ImageAsset = {
 
           <div v-reveal="160" class="mt-8">
             <BaseButton :to="primaryCta.to" size="lg">
-              Обсудить ваше событие
+              {{ primaryCta.label }}
             </BaseButton>
           </div>
         </div>
