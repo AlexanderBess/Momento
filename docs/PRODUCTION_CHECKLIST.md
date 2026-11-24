@@ -12,11 +12,13 @@ Use this on the exact candidate and intended host. Record build/commit, environm
 
 ## Engineering and platform gates
 
-- [ ] Install from the approved lock in a clean target build environment. Run lint, typecheck and production build. Resolve About diagnostics. Record dependency advisory triage.
+- [ ] Install from the approved lock in a clean target build environment. Run lint, typecheck and production build. Confirm the FE-01 fixes on the candidate and record dependency advisory triage.
 - [ ] Build for the actual host OS/CPU and start the Node-capable Nitro artifact. HTTPS works, HTTP redirects, production hostname and scheme are correct, optimized images, fonts and all service routes load. Protect any staging host from indexing.
 - [ ] Inject private Telegram bot token/chat ID at runtime, restrict group access, prevent production use of the local test base and verify the client payload/bundle and proxy/application logs contain no secrets.
 - [ ] Set proxy/request byte limits, bounded server rate and concurrency limits and appropriate timeouts. Review proxy trust and production log access/retention.
 - [ ] Observe availability, aggregate delivery outcomes, latency and configuration failures. Verify alert ownership. Record the previous known-good artifact and configuration, restart procedure and rollback result.
+
+Local FE-01 verification passed lint, typecheck, production build and the Home/About browser checks. The engineering and public route gates remain open for the exact release candidate and intended host. See the [FE-01 verification record](PROJECT_STATUS.md#phase-01-fe-01).
 
 ## Candidate acceptance scenarios
 

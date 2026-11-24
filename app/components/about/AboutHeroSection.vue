@@ -40,7 +40,7 @@ const heroImage: ImageAsset = {
         </div>
 
         <div class="relative md:pl-2 lg:pl-4">
-          <ClipReveal delay="180">
+          <ClipReveal :delay="180">
             <PhotoFrame
               :image="heroImage"
               ratio="1 / 1"

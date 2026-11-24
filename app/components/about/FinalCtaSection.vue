@@ -19,7 +19,7 @@ const ctaImage: ImageAsset = {
     <div class="container-page">
       <div class="grid items-center gap-10 md:grid-cols-[1fr_1fr] md:gap-16 lg:gap-24">
         <div class="order-2 md:order-1">
-          <ClipReveal delay="180">
+          <ClipReveal :delay="180">
             <PhotoFrame
               :image="ctaImage"
               ratio="1 / 1"

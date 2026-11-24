@@ -25,7 +25,7 @@ const storyDetailImage: ImageAsset = {
     <div class="container-page">
       <div class="grid items-center gap-12 md:grid-cols-[0.95fr_1.05fr] md:gap-16 lg:gap-24">
         <div class="relative mx-auto w-full max-w-[34rem] md:mx-0">
-          <ClipReveal delay="200">
+          <ClipReveal :delay="200">
             <PhotoFrame
               :image="foundersImage"
               ratio="2 / 3"

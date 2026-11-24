@@ -15,7 +15,7 @@ useSeoMeta({
 
 <template>
   <div>
-    <HeroSection />
+    <AboutHeroSection />
     <OurStorySection />
     <OurApproachSection />
     <FinalCtaSection />
