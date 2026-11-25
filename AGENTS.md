@@ -10,6 +10,27 @@ MOMENTO is a Russian-language event-services site for Novosibirsk and Berdsk. St
 - Business owners confirm bookings and maintain external business records. Standalone backend, database, CRM/admin, accounts and payments are outside this release. Preserve advanced photobook functionality when simplifying the public configurator.
 - Use only owner-approved commercial claims, imagery, prices and legal copy. Track outstanding decisions in the backlog. Keep public copy in Russian and project planning documentation in English.
 
+## Resource-efficient development
+
+- Prioritize correctness, simplicity, and maintainability.
+- Inspect only files directly relevant to the current task.
+- Reuse existing components, utilities, types, and business logic.
+- Do not repeat completed repository audits.
+- Avoid unrelated refactoring and speculative architecture.
+- Search before reading entire directories or large files.
+- Do not create new documentation when existing documents can be updated.
+- Keep tool output and implementation reports concise.
+- Avoid repetitive progress messages and unnecessary explanations.
+- Run focused validation for local changes.
+- Run broader regression checks when changes affect shared logic, data contracts, or critical user flows.
+- Run full production validation before release.
+- Do not repeat successful checks unless subsequent changes invalidate them.
+- Preserve existing user modifications.
+- Never invent business requirements, commercial prices, or product specifications.
+- Stop and report unresolved blockers instead of repeatedly attempting the same unsuccessful solution.
+- Do not commit, push, or deploy without approval.
+- Efficiency must never come at the expense of correctness, security, or data integrity.
+
 ## Verification and change discipline
 
 Use npm and `package-lock.json`, with the Node version in `.nvmrc`. Inspect scripts in `package.json`. Run `npm run lint`, `npm run typecheck` and `npm run build` individually when diagnosing failures. Build requires font-provider access or available cached resources. Validate delivery against a running Nitro server. Static-only output cannot handle inquiry submission.
