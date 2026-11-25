@@ -57,7 +57,27 @@ image: { src: '/images/services/booth.jpg', alt: 'Гости у AI-фотобу�
 | Оборудование | Реальное фото DZEN TECH «Классика» в полный рост; после замены поправить координаты hotspot-точек | вертикаль 2:3 | 1 |
 | Оформление | Будка со сменными панелями, оформлением экрана, брендированием, тематическим декором | 4:3 | 4 |
 
-## Страница фотокниг (`/services/photobooks`)
+## Public photobooks section
+
+The general page reuses `public/images/photobooks/hero/open-book.webp` as its hero. The personal card and hero reuse `public/images/photobooks/hero/closed-sand.webp`. The graduation card and hero temporarily reuse `public/images/about/photobook-school.webp` from About. All three are labeled as demonstration samples. Missing images use the shared `PhotoFrame` placeholder. The product details section uses icons until dedicated photographs are available.
+
+| Purpose | Proposed path under `public/images/photobooks/` | Ratio | Shot |
+|---|---|---|---|
+| General hero | `hero/open-book.webp` | Wide cutout, about 5:2 | Existing open-book cutout can stay as a demo. For a replacement, show a real book open on a full spread with the page block and cover visible. |
+| Personal direction | `personal/direction.webp` | 4:3 | A personal book and a visible spread in warm, neutral light. The existing sand cover cutout works as a temporary reference. |
+| Graduation direction | `graduation/direction.webp` | 4:3 | Graduation album with cover and spread. Use cleared images and identifying details, or photograph an anonymized sample. |
+| Product details | `details/{cover,binding,print}.webp` | 4:3 | Macro views of the cover surface, binding and page block, and a printed spread. |
+| Personal collection cards | `personal/collections/{wedding-story,family-moments,travel-journal,little-moments}.webp` | 4:3 | One cover and spread per preset. Match the existing collection themes and use the preset specifications as the reference. |
+| Book Guide | `personal/guide/{sizes,pages,fabric,leatherette,photo}.webp` | 4:3 | Side-by-side size and page-count references and close-ups of each approved cover material. Existing fabric cutouts can illustrate matching colors. |
+| Graduation templates | `graduation/templates/<id>/cover.webp`, `graduation/templates/<id>/spread-01.webp` and subsequent spreads | 4:3 cover and spreads | One cover and optional sample spreads for Little World, Happy Days, Little Stories, Editorial, Minimal, and Creative. Use cleared or anonymized imagery. |
+
+Wedding Story temporarily uses the open-book demo. Family Moments, Travel Journal, and Little Moments use labeled placeholders until collection-specific images are available. Set approved images in `app/config/photobook/showcase.ts`.
+
+The Book Guide uses the open-book demo as a general reference when size or page count changes. It uses existing fabric cutouts for milk, sand, violet, and graphite. The remaining fabric colors, leatherette, and photo covers use labeled placeholders. Size and page-count comparison photos and the remaining approved cover samples are still pending.
+
+Graduation templates currently show labeled placeholders. Add approved covers and optional spreads to the matching entries in `app/config/photobook/graduation.ts`. Spread galleries load on demand.
+
+## Preserved photobook studio assets
 
 Конструктор работает на библиотеке демонстрационных изображений (`app/config/photobook/library.ts`).
 Пока у записи `src: null`, вместо фото рисуется процедурная иллюстрация (`DemoArtwork.vue`) — она
@@ -77,7 +97,7 @@ image: { src: '/images/services/booth.jpg', alt: 'Гости у AI-фотобу�
 подбираются в слоты макетов. Для библиотеки нужны фото с правом коммерческого использования и
 согласием изображённых людей.
 
-### Hero страницы фотокниг — фото продукта
+### Фото продукта для прежней композиции hero
 
 Пути, `alt` и размеры — в `app/config/photobook/hero.ts`, файлы — в `public/images/photobooks/hero/`.
 Каждый объект — **отдельный вырезанный кадр на прозрачном фоне** (PNG или WebP с альфа-каналом),

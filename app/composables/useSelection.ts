@@ -40,8 +40,8 @@ export function useSelection() {
     if (!item) return
     cart.remove(id)
     announce(
-      item.service === 'photobooks'
-        ? `Удалено из подборки: ${item.title}. Проект книги остался в Book Studio.`
+      item.service === 'photobooks' && typeof item.config.projectId === 'string'
+        ? `Удалено из подборки: ${item.title}. Сохранённые данные книги остаются на этом устройстве.`
         : `Удалено из подборки: ${item.title}.`,
     )
   }

@@ -1,5 +1,15 @@
 import type { CartItem, CartItemInput } from '~/types/cart'
 import type { PhotobookConfig } from '~/types/photobook'
+import { findPreset } from '~/config/photobook/presets'
+import {
+  normalizePhotobookRequestPrice,
+  PHOTOBOOK_QUOTE_LABEL,
+  photobookCollectionDetails,
+  photobookCollectionOrder,
+  type PhotobookCollectionPreferences,
+} from '#shared/photobookCollection'
+import { photobookGuideDetails, photobookGuideOrder, type PhotobookGuideOptions } from '#shared/photobookGuide'
+import { graduationOrderDetails, type GraduationOrder } from '#shared/graduationPhotobook'
 import { boothCustomization } from '~/config/booth'
 import { eventTypeLabels, eventTypes, type EventType } from '~/config/order'
 import {
@@ -186,6 +196,49 @@ export function photozoneItem(config: PhotozoneConfig): CartItemInput | null {
 /* ---------- Photobooks (several positions, one per Book Studio project) ---------- */
 
 export const photobookKey = (projectId: string) => `photobooks:${projectId}`
+export const photobookCollectionKey = (presetId: PhotobookCollectionPreferences['presetId']) => `photobooks:collection:${presetId}`
+
+export function photobookCollectionItem(preferences: PhotobookCollectionPreferences): CartItemInput {
+  const order = photobookCollectionOrder(preferences)
+  return {
+    key: photobookCollectionKey(order.presetId),
+    service: 'photobooks',
+    title: `Фотокнига «${findPreset(order.presetId).name}»`,
+    details: photobookCollectionDetails(order),
+    price: null,
+    quantity: 1,
+    config: { ...order },
+    href: '/services/photobooks/personal#collections',
+  }
+}
+
+export function photobookGuideItem(options: PhotobookGuideOptions, desiredDeliveryDate?: string): CartItemInput {
+  const order = photobookGuideOrder(options, desiredDeliveryDate)
+  return {
+    key: `photobooks:individual:${options.format}:${options.pageCount}:${options.coverType}:${options.coverColor}`,
+    service: 'photobooks',
+    title: 'Индивидуальная фотокнига',
+    details: photobookGuideDetails(order),
+    price: null,
+    quantity: 1,
+    config: { ...order },
+    href: '/services/photobooks/personal#book-guide',
+  }
+}
+
+export function graduationPhotobookItem(order: GraduationOrder): CartItemInput {
+  const { institutionType, templateId, children, additionalCopies, photography, desiredDeliveryDate, preferredPhotographyDate } = order
+  return {
+    key: ['photobooks', 'graduation', institutionType, templateId, children, additionalCopies, photography, desiredDeliveryDate, preferredPhotographyDate].join(':'),
+    service: 'photobooks',
+    title: 'Выпускные альбомы',
+    details: graduationOrderDetails(order),
+    price: null,
+    quantity: 1,
+    config: { ...order },
+    href: '/services/photobooks/graduation#graduation-calculator',
+  }
+}
 
 export interface PhotobookItemConfig {
   projectId: string
@@ -206,7 +259,7 @@ export function photobookItem(project: { id: string; config: PhotobookConfig; la
   const rows = describePhotobook(config)
   const pick = (label: string) => rows.find((r) => r.label === label)?.value
   const title = config.coverTitleEnabled && config.coverTitle.trim() ? `Фотокнига «${config.coverTitle.trim()}»` : 'Фотокнига'
-  return {
+  return normalizePhotobookRequestPrice({
     key: photobookKey(project.id),
     service: 'photobooks',
     title,
@@ -223,7 +276,7 @@ export function photobookItem(project: { id: string; config: PhotobookConfig; la
     quantity: config.quantity,
     config: { projectId: project.id, layoutComplete: project.layoutComplete, book: serializeConfig(config) } satisfies PhotobookItemConfig,
     href: `/services/photobooks?project=${encodeURIComponent(project.id)}#studio`,
-  }
+  })
 }
 
 /* ---------- Generic ---------- */
@@ -245,8 +298,8 @@ export function rebuildItem(item: CartItem): CartItemInput | null {
 }
 
 /** «Обсуждается» / «18 000 ₽» / «18 000 ₽ + обсуждается». */
-export function priceText(item: Pick<CartItem, 'price' | 'pricePartial'>): string {
-  if (item.price === null) return 'Обсуждается'
+export function priceText(item: Pick<CartItem, 'service' | 'price' | 'pricePartial'>): string {
+  if (item.price === null) return item.service === 'photobooks' ? PHOTOBOOK_QUOTE_LABEL : 'Обсуждается'
   return `${formatRub(item.price)}${item.pricePartial ? ' + обсуждается' : ''}`
 }
 

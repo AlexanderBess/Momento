@@ -15,7 +15,7 @@ export interface CartItem {
    * (or, for single-position services, replaces) that position instead of creating a duplicate.
    * - booth / photography: the service slug — one position per service;
    * - photo zones: `photozones:ready:<conceptId>` / `photozones:custom`;
-   * - photobooks: `photobooks:<projectId>` — one position per Book Studio project.
+   * - photobooks: one per collection preset, individual configuration, graduation group or legacy project.
    */
   key: string
   service: ServiceSlug

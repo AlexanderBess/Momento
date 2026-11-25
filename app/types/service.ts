@@ -1,13 +1,8 @@
-export type ServiceSlug = 'booth' | 'photography' | 'photozones' | 'photobooks'
+import type { ImageAsset } from '#shared/imageAsset'
 
-/** A local image (stored under /public/images). `null` src renders a marked placeholder. */
-export interface ImageAsset {
-  src: string | null
-  alt: string
-  /** Intrinsic width / height, used to reserve space and avoid layout shift. */
-  width: number
-  height: number
-}
+export type { ImageAsset } from '#shared/imageAsset'
+
+export type ServiceSlug = 'booth' | 'photography' | 'photozones' | 'photobooks'
 
 export interface Service {
   slug: ServiceSlug

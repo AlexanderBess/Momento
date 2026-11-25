@@ -2,6 +2,8 @@ import type { CartAddResult, CartItem, CartItemInput } from '~/types/cart'
 import type { ServiceSlug } from '~/types/service'
 import { services } from '~/config/services'
 import { createId, sortKeys } from '~/lib/ids'
+import { normalizePhotobookRequestPrice } from '#shared/photobookCollection'
+import { isPersonalPhotobookOrder } from '#shared/photobookGuide'
 
 /**
  * The shared MOMENTO selection («Моя подборка»): one list for all services, shown in the header
@@ -57,7 +59,7 @@ function sanitize(list: unknown[]): CartItem[] {
     seen.add(item.key)
     seen.add(`#${item.id}`)
     return fresh
-  })
+  }).map(normalizePhotobookRequestPrice)
 }
 
 /**
@@ -168,7 +170,8 @@ export function useCart() {
         return [...list, { ...input, id: createId('pos'), updatedAt: Date.now() }]
       }
       const current = list[index]!
-      if (sameContent(current, input)) {
+      // Adding the same book again keeps the delivery preference on the existing position.
+      if (sameContent(current, input) || (input.service === 'photobooks' && isPersonalPhotobookOrder(input.config.orderType))) {
         result = 'unchanged'
         return list
       }
@@ -184,15 +187,18 @@ export function useCart() {
 
   /**
    * Replaces the content of an existing position (editor «Сохранить», Book Studio sync).
-   * Keeps the position id. Returns false when the position is gone (removed meanwhile) — it is
-   * never re-created here.
+   * Keeps the position id. A position removed meanwhile is never re-created here.
    */
-  function update(id: string, input: CartItemInput): 'updated' | 'unchanged' | 'missing' {
-    let result: 'updated' | 'unchanged' | 'missing' = 'missing'
+  function update(id: string, input: CartItemInput): 'updated' | 'unchanged' | 'missing' | 'key-conflict' {
+    let result: ReturnType<typeof update> = 'missing'
     mutate((list) => {
       const index = list.findIndex((i) => i.id === id)
       if (index === -1) return list
-      if (sameContent(list[index]!, input)) {
+      if (list.some((item) => item.id !== id && item.key === input.key)) {
+        result = 'key-conflict'
+        return list
+      }
+      if (list[index]!.key === input.key && sameContent(list[index]!, input)) {
         result = 'unchanged'
         return list
       }

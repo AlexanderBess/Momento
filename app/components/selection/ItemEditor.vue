@@ -1,6 +1,23 @@
 <script setup lang="ts">
-import { AlertCircle, ArrowUpRight } from '@lucide/vue'
+import { AlertCircle } from '@lucide/vue'
 import type { CartItem } from '~/types/cart'
+import { photobookPresets } from '~/config/photobook/presets'
+import {
+  isDeliveryDate,
+  PERSONAL_COLLECTION_ORDER,
+  PHOTOBOOK_QUOTE_LABEL,
+  photobookCollectionDetails,
+  photobookCollectionOrder,
+  readPhotobookCollectionOrder,
+  type PhotobookCollectionPreferences,
+} from '#shared/photobookCollection'
+import {
+  INDIVIDUAL_PHOTOBOOK_ORDER,
+  isPersonalPhotobookOrder,
+  readPhotobookGuideOrder,
+  type PhotobookGuideOrder,
+} from '#shared/photobookGuide'
+import { GRADUATION_PHOTOBOOK_ORDER, graduationOrderFromDraft, readGraduationOrder, type GraduationDraft } from '#shared/graduationPhotobook'
 import { sameJson } from '~/lib/ids'
 import {
   conflictingFields,
@@ -12,6 +29,10 @@ import {
 } from '~/lib/photobookProjects'
 import {
   boothItem,
+  graduationPhotobookItem,
+  photobookCollectionItem,
+  photobookCollectionKey,
+  photobookGuideItem,
   photographyItem,
   photozoneItem,
   readBoothConfig,
@@ -28,12 +49,15 @@ import {
  * with the service's own form inside. Works on a copy — the position changes only on «Сохранить».
  * Closing with unsaved changes asks «Сохранить изменения» / «Выйти без сохранения».
  *
- * Photobooks edit the Book Studio project itself (version-checked); the position is then synced.
+ * Legacy photobook edits save the linked project with a version check, then sync its position.
  */
 type Draft =
   | { kind: 'booth'; value: BoothConfig }
   | { kind: 'photography'; value: PhotographyConfig }
   | { kind: 'photozones'; value: PhotozoneConfig }
+  | { kind: 'photobook-collection'; value: PhotobookCollectionPreferences }
+  | { kind: 'photobook-individual'; value: PhotobookGuideOrder }
+  | { kind: 'photobook-graduation'; value: GraduationDraft; savedTemplateId: string }
   | { kind: 'photobooks'; value: ProjectState; projectId: string; baseVersion: number; base: ProjectState }
   | { kind: 'missing' }
 
@@ -46,6 +70,20 @@ const draft = ref<Draft | null>(null)
 const initial = ref<unknown>(null)
 const conflict = ref<{ latest: PhotobookProject; fields: string[] } | null>(null)
 const saveError = ref(false)
+const personalBookError = ref('')
+const graduationError = ref('')
+const uid = useId()
+
+const collectionDetails = computed(() =>
+  draft.value?.kind === 'photobook-collection'
+    ? photobookCollectionDetails(photobookCollectionOrder({ presetId: draft.value.value.presetId }))
+    : [],
+)
+
+function collectionTaken(presetId: PhotobookCollectionPreferences['presetId']): boolean {
+  const existing = cart.find(photobookCollectionKey(presetId))
+  return Boolean(existing && existing.id !== item.value?.id)
+}
 
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T
 
@@ -60,6 +98,22 @@ function draftFor(it: CartItem): Draft {
       return value ? { kind: 'photozones', value } : { kind: 'missing' }
     }
     case 'photobooks': {
+      if (it.config.orderType === PERSONAL_COLLECTION_ORDER) {
+        const order = readPhotobookCollectionOrder(it.config)
+        if (!order) return { kind: 'missing' }
+        return {
+          kind: 'photobook-collection',
+          value: { presetId: order.presetId, desiredDeliveryDate: order.desiredDeliveryDate ?? '' },
+        }
+      }
+      if (it.config.orderType === INDIVIDUAL_PHOTOBOOK_ORDER) {
+        const order = readPhotobookGuideOrder(it.config)
+        return order ? { kind: 'photobook-individual', value: order } : { kind: 'missing' }
+      }
+      if (it.config.orderType === GRADUATION_PHOTOBOOK_ORDER) {
+        const order = readGraduationOrder(it.config, { allowDisabled: true })
+        return order ? { kind: 'photobook-graduation', value: order, savedTemplateId: order.templateId } : { kind: 'missing' }
+      }
       const link = readPhotobookItemConfig(it.config)
       const project = link ? readProject(link.projectId) : null
       if (!project) return { kind: 'missing' }
@@ -75,6 +129,8 @@ watch(
   () => {
     conflict.value = null
     saveError.value = false
+    personalBookError.value = ''
+    graduationError.value = ''
     if (!item.value) {
       draft.value = null
       return
@@ -124,6 +180,35 @@ function save(): boolean {
     }
     syncPhotobookPosition(cart, result.project)
     announceBookSaved(d.projectId, 'editor')
+  } else if (d.kind === 'photobook-collection' || d.kind === 'photobook-individual') {
+    const date = d.value.desiredDeliveryDate
+    if (date && !isDeliveryDate(date)) {
+      personalBookError.value = 'Проверьте желаемую дату получения.'
+      return false
+    }
+    const next = d.kind === 'photobook-collection'
+      ? photobookCollectionItem(d.value)
+      : photobookGuideItem(d.value.specification, date)
+    const result = cart.update(it.id, next)
+    if (result === 'key-conflict') {
+      personalBookError.value = d.kind === 'photobook-collection'
+        ? 'Эта коллекция уже в подборке. Выберите другую.'
+        : 'Фотокнига с такими параметрами уже в подборке. Выберите другие параметры.'
+      return false
+    }
+    if (result === 'missing') return true
+  } else if (d.kind === 'photobook-graduation') {
+    const order = graduationOrderFromDraft(d.value, { allowDisabled: d.value.templateId === d.savedTemplateId })
+    if (!order) {
+      graduationError.value = 'Проверьте шаблон, количество экземпляров и даты.'
+      return false
+    }
+    const result = cart.update(it.id, graduationPhotobookItem(order))
+    if (result === 'key-conflict') {
+      graduationError.value = 'Заказ с такими параметрами уже в подборке.'
+      return false
+    }
+    if (result === 'missing') return true
   } else {
     const next = d.kind === 'booth' ? boothItem(d.value) : d.kind === 'photography' ? photographyItem(d.value) : photozoneItem(d.value)
     if (!next) return true
@@ -175,23 +260,6 @@ function reapplyMine() {
   conflict.value = null
   onSave()
 }
-
-async function openStudio() {
-  const href = item.value?.href
-  if (!href) return
-  if (dirty.value) {
-    const answer = await confirm.ask({
-      title: 'Сохранить изменения?',
-      message: 'Перед переходом в Book Studio сохраните или отмените изменения.',
-      confirmLabel: 'Сохранить изменения',
-      cancelLabel: 'Выйти без сохранения',
-    })
-    if (answer === 'dismiss') return
-    if (answer === 'confirm' && !save()) return
-  }
-  close()
-  await navigateTo(href)
-}
 </script>
 
 <template>
@@ -220,19 +288,39 @@ async function openStudio() {
       <BoothEditor v-if="draft.kind === 'booth'" v-model="draft.value" />
       <PhotographyEditor v-else-if="draft.kind === 'photography'" v-model="draft.value" />
       <PhotozoneEditor v-else-if="draft.kind === 'photozones'" v-model="draft.value" />
-      <template v-else-if="draft.kind === 'photobooks'">
-        <PhotobookEditor v-model="draft.value" />
-        <button
-          type="button"
-          class="mt-6 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold underline-offset-[6px] hover:underline"
-          @click="openStudio"
-        >
-          Открыть в Book Studio — развороты и фотографии
-          <ArrowUpRight class="size-4" :stroke-width="1.75" aria-hidden="true" />
-        </button>
-      </template>
+      <div v-else-if="draft.kind === 'photobook-collection' || draft.kind === 'photobook-individual'" class="grid gap-4">
+        <template v-if="draft.kind === 'photobook-collection'">
+          <div>
+            <label :for="`${uid}-collection`" class="mb-1.5 block text-sm font-semibold">Коллекция</label>
+            <select :id="`${uid}-collection`" v-model="draft.value.presetId" class="field-input" @change="personalBookError = ''">
+              <option v-for="preset in photobookPresets" :key="preset.id" :value="preset.id" :disabled="collectionTaken(preset.id)">
+                {{ preset.name }}{{ collectionTaken(preset.id) ? ' · уже в подборке' : '' }}
+              </option>
+            </select>
+          </div>
+          <ul class="grid gap-1 text-sm text-muted" aria-label="Параметры коллекции">
+            <li v-for="detail in collectionDetails" :key="detail">{{ detail }}</li>
+          </ul>
+        </template>
+        <PhotobookGuideControls v-else v-model="draft.value.specification" @update:model-value="personalBookError = ''" />
+        <p class="text-sm font-semibold">{{ PHOTOBOOK_QUOTE_LABEL }}</p>
+        <div>
+          <label :for="`${uid}-delivery`" class="mb-1.5 block text-sm font-semibold">Желаемая дата получения (необязательно)</label>
+          <input :id="`${uid}-delivery`" v-model="draft.value.desiredDeliveryDate" class="field-input" type="date" @input="personalBookError = ''">
+        </div>
+        <p v-if="personalBookError" class="text-sm text-error" role="alert">{{ personalBookError }}</p>
+      </div>
+      <div v-else-if="draft.kind === 'photobook-graduation'" class="grid gap-4">
+        <GraduationOrderFields v-model="draft.value" :saved-template-id="draft.savedTemplateId" @update:model-value="graduationError = ''" />
+        <p class="text-sm font-semibold">{{ PHOTOBOOK_QUOTE_LABEL }}</p>
+        <p v-if="graduationError" class="text-sm text-error" role="alert">{{ graduationError }}</p>
+      </div>
+      <PhotobookEditor v-else-if="draft.kind === 'photobooks'" v-model="draft.value" />
       <p v-else class="text-[0.9375rem] leading-relaxed text-muted">
-        <template v-if="item.service === 'photobooks'">
+        <template v-if="isPersonalPhotobookOrder(item.config.orderType) || item.config.orderType === GRADUATION_PHOTOBOOK_ORDER">
+          Параметры этой книги недоступны. Удалите позицию и выберите параметры заново на странице фотокниг.
+        </template>
+        <template v-else-if="item.service === 'photobooks'">
           Проект этой книги не найден на этом устройстве — возможно, данные браузера были очищены. Позиция останется в
           заявке с сохранёнными параметрами; изменения можно описать в комментарии к заявке.
         </template>

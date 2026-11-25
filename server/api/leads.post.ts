@@ -1,5 +1,5 @@
 import { todayIso, validateLead, type LeadResponse } from '#shared/lead'
-import { leadMessageBlocks, sanitizeLead, splitMessages } from '../utils/leadMessage'
+import { leadMessageBlocks, preparePhotobookLeadItems, sanitizeLead, splitMessages } from '../utils/leadMessage'
 
 /**
  * POST /api/leads — the only way a request leaves the site:
@@ -45,6 +45,12 @@ export default defineEventHandler(async (event) => {
 
   const lead = sanitizeLead(await readBody(event).catch(() => null))
   if (!lead || !KEY_RE.test(lead.idempotencyKey)) return reply(400, { ok: false, reason: 'rejected' })
+
+  const items = preparePhotobookLeadItems(lead.items)
+  if (!items) {
+    return reply(422, { ok: false, reason: 'invalid', fields: { items: 'Проверьте параметры фотокниги в подборке.' } })
+  }
+  lead.items = items
 
   // Allow «yesterday» for visitors in time zones behind the server.
   const yesterday = todayIso(new Date(Date.now() - 24 * 60 * 60 * 1000))

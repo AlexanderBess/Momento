@@ -44,7 +44,7 @@ function onClick(event: MouseEvent) {
   if (event.target === dialog.value) closeDrawer()
 }
 
-// Following any link inside the drawer (services, «Открыть в Book Studio») closes it.
+// Following a link inside the drawer closes it.
 watch(() => route.fullPath, closeDrawer)
 
 const onCheckout = computed(() => route.path === CHECKOUT_PATH)

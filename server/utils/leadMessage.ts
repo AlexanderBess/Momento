@@ -6,6 +6,14 @@ import {
   type LeadItem,
   type LeadRequest,
 } from '#shared/lead'
+import {
+  normalizePhotobookRequestPrice,
+  photobookCollectionDetails,
+  readPhotobookCollectionOrder,
+} from '#shared/photobookCollection'
+import { INDIVIDUAL_PHOTOBOOK_ORDER, photobookGuideDetails, readPhotobookGuideOrder } from '#shared/photobookGuide'
+import { GRADUATION_PHOTOBOOK_ORDER, graduationOrderDetails, readGraduationOrder } from '#shared/graduationPhotobook'
+import { findPreset } from '../../app/config/photobook/presets'
 
 /**
  * Turning an untrusted request body into a clean LeadRequest, and a LeadRequest into the text of
@@ -70,6 +78,40 @@ export function sanitizeLead(body: unknown): LeadRequest | null {
   }
 }
 
+/** Keep the legacy project shape and rebuild commercial photobook lines from the catalog. */
+export function preparePhotobookLeadItems(items: LeadItem[]): LeadItem[] | null {
+  const prepared: LeadItem[] = []
+  for (const item of items) {
+    const { config } = item
+    const commercial = ['orderType', 'presetId', 'specification', 'templateId', 'institutionType'].some((key) => key in config)
+    if (item.service !== 'photobooks' || !commercial) {
+      prepared.push(normalizePhotobookRequestPrice(item))
+      continue
+    }
+    const order = config.orderType === GRADUATION_PHOTOBOOK_ORDER
+      ? readGraduationOrder(config)
+      : config.orderType === INDIVIDUAL_PHOTOBOOK_ORDER
+        ? readPhotobookGuideOrder(config)
+        : readPhotobookCollectionOrder(config)
+    if (!order) return null
+    const individual = order.orderType === INDIVIDUAL_PHOTOBOOK_ORDER
+    const graduation = order.orderType === GRADUATION_PHOTOBOOK_ORDER
+    prepared.push({
+      ...item,
+      title: graduation ? 'Выпускные альбомы' : 'Персональная фотокнига',
+      subtitle: graduation ? 'Групповой заказ' : individual ? 'Индивидуальные параметры' : `Коллекция: ${findPreset(order.presetId).name}`,
+      details: graduation ? graduationOrderDetails(order) : individual ? photobookGuideDetails(order) : photobookCollectionDetails(order),
+      status: null,
+      price: null,
+      pricePartial: false,
+      priceIsDemo: false,
+      quantity: 1,
+      config: { ...order },
+    })
+  }
+  return prepared
+}
+
 const escapeHtml = (s: string) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
 const rub = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 })
@@ -130,7 +172,7 @@ export function leadMessageBlocks(lead: LeadRequest, requestNumber: string): str
   lead.items.forEach((item, index) => {
     const price =
       item.price === null
-        ? 'обсуждается'
+        ? item.service === 'photobooks' ? 'рассчитывается индивидуально' : 'обсуждается'
         : `${money(item.price)}${item.pricePartial ? ' + обсуждается' : ''}${item.priceIsDemo ? ' (демо-цена)' : ''}`
     const lines = [
       `${index + 1}. <b>${e(item.title)}</b> — ${SERVICE_LABELS[item.service]}`,
@@ -138,7 +180,7 @@ export function leadMessageBlocks(lead: LeadRequest, requestNumber: string): str
       ...item.details.map((d) => `   • ${e(d)}`),
       item.status && `   Статус: ${e(item.status)}`,
       item.service === 'photobooks' && typeof item.config.projectId === 'string' && `   Проект: ${e(item.config.projectId)}`,
-      `   Цена: ${price}${item.quantity > 1 ? ` × ${item.quantity}` : ''}`,
+      `   ${item.service === 'photobooks' ? 'Стоимость' : 'Цена'}: ${price}${item.quantity > 1 ? ` × ${item.quantity}` : ''}`,
     ]
     blocks.push(lines.filter(Boolean).join('\n'))
   })
