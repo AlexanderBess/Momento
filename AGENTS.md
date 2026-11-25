@@ -1,6 +1,6 @@
 # Working on MOMENTO
 
-MOMENTO is a Russian-language event-services site for Novosibirsk and Berdsk. Start with [MVP scope](docs/MVP_SCOPE.md), [project status](docs/PROJECT_STATUS.md) and the [backlog](docs/BACKLOG.md). The 22 November deep audit and older architectural notes are historical. Verify current behavior in source.
+MOMENTO is a Russian-language event-services site for Novosibirsk and Berdsk. Consult [MVP scope](docs/MVP_SCOPE.md), [project status](docs/PROJECT_STATUS.md) and the [backlog](docs/BACKLOG.md) selectively when relevant to the task, product scope, business requirements, or release planning. For localized UI changes, inspect only relevant components, styles, and design references. The 22 November deep audit and older architectural notes are historical. Verify current behavior in source.
 
 ## Architecture and data
 
@@ -33,6 +33,6 @@ MOMENTO is a Russian-language event-services site for Novosibirsk and Berdsk. St
 
 ## Verification and change discipline
 
-Use npm and `package-lock.json`, with the Node version in `.nvmrc`. Inspect scripts in `package.json`. Run `npm run lint`, `npm run typecheck` and `npm run build` individually when diagnosing failures. Build requires font-provider access or available cached resources. Validate delivery against a running Nitro server. Static-only output cannot handle inquiry submission.
+Use npm and `package-lock.json`, with the Node version in `.nvmrc`. Inspect scripts in `package.json`. Select validation based on the change scope. For text-only or CSS-only changes, prefer focused visual checks when sufficient. Prefer file-level linting for localized code changes. Run typecheck when typed contracts, template expressions, or component logic are affected. Reserve full builds and broader regression checks for release validation, critical flows, or changes that require them. Run `npm run lint`, `npm run typecheck` and `npm run build` individually when diagnosing failures. Build requires font-provider access or available cached resources. Validate delivery against a running Nitro server when delivery behavior is affected and before release. Static-only output cannot handle inquiry submission.
 
-Match the requested phase. Phase 00 authorizes audit documentation only. Start Phase 01 after approval. Keep unrelated working-tree changes intact, including untracked user documents. Report actual check results and secure approval before committing or pushing.
+Respect the approved task scope and implementation phase. Do not start unapproved phases or unrelated work. Keep unrelated working-tree changes intact, including untracked user documents. Report actual check results and secure approval before committing or pushing.
